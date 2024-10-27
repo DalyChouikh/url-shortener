@@ -3,9 +3,8 @@
 CREATE TABLE URL (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   long_url TEXT NOT NULL,
-  short_url TEXT NOT NULL,
-  created_at DATETIME NOT NULL,
-  updated_at DATETIME NOT NULL
+  short_code TEXT UNIQUE NOT NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 )
 -- +goose StatementEnd
 
