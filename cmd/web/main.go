@@ -35,5 +35,6 @@ func main() {
 	defer db.Close()
 
 	router := routes.SetupRoutes(db)
+	router.Static("/assets", "./assets")
 	router.Run(":8080")
 }
