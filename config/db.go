@@ -2,12 +2,12 @@ package config
 
 import (
 	"database/sql"
-	_ "github.com/mattn/go-sqlite3"
+	_ "github.com/lib/pq"
 	"log"
 )
 
-func SetupDatabase() *sql.DB {
-	db, err := sql.Open("sqlite3", "app.db")
+func SetupDatabase(databaseConnectionString string) *sql.DB {
+	db, err := sql.Open("postgres", databaseConnectionString)
 	if err != nil {
 		log.Fatal(err)
 	}
