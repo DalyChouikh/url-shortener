@@ -12,7 +12,6 @@ func SetupRoutes(db *sql.DB) *gin.Engine {
 
 	router := gin.Default()
 
-	router.GET("/", urlHandler.HandleGetHome)
 	router.POST("/shorten", urlHandler.HandlePostUrl)
 	router.GET("/:short_code", urlHandler.HandleGetUrl)
 
