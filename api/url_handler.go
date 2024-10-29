@@ -2,7 +2,6 @@ package api
 
 import (
 	"database/sql"
-	"html/template"
 	"log"
 	"net/http"
 
@@ -17,20 +16,6 @@ type UrlHandler struct {
 
 func NewUrlHandler(db *sql.DB) *UrlHandler {
 	return &UrlHandler{db: db}
-}
-
-func (h *UrlHandler) HandleGetHome(ctx *gin.Context) {
-	t, err := template.ParseFiles("./assets/templates/home-page.html")
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	err = t.Execute(ctx.Writer, nil)
-	if err != nil {
-		log.Fatal(err)
-	}
-
 }
 
 func (h *UrlHandler) HandlePostUrl(ctx *gin.Context) {
