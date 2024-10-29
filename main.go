@@ -6,6 +6,7 @@ import (
 
 	"github.com/DalyChouikh/url-shortener/config"
 	"github.com/DalyChouikh/url-shortener/routes"
+	"github.com/gin-contrib/cors"
 	"github.com/joho/godotenv"
 )
 
@@ -35,6 +36,6 @@ func main() {
 	defer db.Close()
 
 	router := routes.SetupRoutes(db)
-	router.Static("/assets", "./assets")
+	router.Use(cors.Default())
 	router.Run(":8080")
 }
