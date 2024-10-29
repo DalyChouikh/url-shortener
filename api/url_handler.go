@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/DalyChouikh/url-shortener/models"
 	"github.com/DalyChouikh/url-shortener/utils"
@@ -42,7 +43,11 @@ func (h *UrlHandler) HandlePostUrl(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, gin.H{"short_code": "http://localhost:8080/" + shortCode})
+	if env := os.Getenv("ENV"); env == "development" {
+		ctx.JSON(http.StatusOK, gin.H{"short_url": "http://localhost:8080/" + shortCode})
+	} else {
+		ctx.JSON(http.StatusOK, gin.H{"short_url": "https://gdgclinky.onrender.com/" + shortCode})
+	}
 
 }
 
