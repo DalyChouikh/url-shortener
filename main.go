@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"os"
 
 	"github.com/DalyChouikh/url-shortener/config"
@@ -31,7 +30,6 @@ func main() {
 		godotenv.Load(".env.production")
 	}
 	databaseConnectionString := os.Getenv("DATABASE_CONNECTION_STRING")
-	log.Println("Database connection string: ", databaseConnectionString)
 	db := config.SetupDatabase(databaseConnectionString)
 	defer db.Close()
 
