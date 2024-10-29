@@ -50,7 +50,7 @@ func (h *UrlHandler) HandleGetUrl(ctx *gin.Context) {
 	shortCode := ctx.Param("short_code")
 	longUrl, err := models.GetUrl(h.db, shortCode)
 	if err != nil {
-		ctx.JSON(http.StatusNotFound, gin.H{"error": "URL not found"})
+		ctx.JSON(http.StatusNotFound, gin.H{"error": "Invalid code"})
 		return
 	}
 
