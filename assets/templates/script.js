@@ -3,6 +3,8 @@ async function generateShortLink() {
   const longUrl = document.getElementById("urlInput").value;
   const errorMessage = document.getElementById("errorMessage");
   const generatedLink = document.getElementById("generatedLink");
+  const linkContainer = document.getElementById("linkContainer");
+  const copyButton = document.getElementById("copyButton");
 
   // Clear any previous messages or link
   errorMessage.style.display = "none";
@@ -26,6 +28,8 @@ async function generateShortLink() {
       generatedLink.href = data.short_url;
       generatedLink.textContent = data.short_url;
       generatedLink.style.display = "flex";
+      linkContainer.style.visibility = "visible";
+      copyButton.style.visibility = "visible";
     } else {
       // Display the error message
       errorMessage.textContent = data.error || "An error occurred";
@@ -35,5 +39,19 @@ async function generateShortLink() {
     errorMessage.textContent = "Network error. Please try again.";
     errorMessage.style.display = "block";
   }
+}
+
+function copyLink() {
+  const generatedLink = document.getElementById("generatedLink");
+
+  // Copy the URL from the generatedLink's href attribute
+  navigator.clipboard
+    .writeText(generatedLink.href)
+    .then(() => {
+      alert("Copied to clipboard!");
+    })
+    .catch((err) => {
+      console.error("Failed to copy: ", err);
+    });
 }
 window.history.replaceState({}, document.title, "/");

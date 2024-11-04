@@ -40,9 +40,14 @@
             <p id="errorMessage" class="error-message">{{ .Error }}</p>
 
             <!-- Display the generated short link here -->
-            <a id="generatedLink" href="#" class="main-card-generated-link">
-              Shortened URL
-            </a>
+            <div id="linkContainer" class="link-container">
+              <a id="generatedLink" href="#" class="main-card-generated-link">
+                Shortened URL
+              </a>
+              <button id="copyButton" class="copy-icon" onclick="copyLink()">
+                📋
+              </button>
+            </div>
           </div>
         </div>
       </div>

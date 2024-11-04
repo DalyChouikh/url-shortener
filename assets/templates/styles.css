@@ -168,7 +168,6 @@ a:hover {
   text-decoration: none;
   color: #2c3e50;
   font-weight: 600;
-  width: 60%;
   height: 50px;
   padding: 10px;
   border: 1px solid #bdc3c7;
@@ -176,7 +175,21 @@ a:hover {
   background-color: #bdc3c7;
   display: none;
   align-items: center;
-  justify-content: center;
+}
+
+.link-container {
+  visibility: hidden;
+  display: flex;
+  align-items: center;
+}
+
+.copy-icon {
+  visibility: hidden;
+  background: none;
+  border: none;
+  cursor: pointer;
+  margin-left: 8px;
+  font-size: 1.2em;
 }
 
 .main-card-generated-link:hover {
