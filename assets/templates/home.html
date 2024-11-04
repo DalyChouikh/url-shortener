@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="/static/GDG-Logo.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GDGC Linky</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <div id="root">
+      <div class="container">
+        <nav class="navbar">
+          <a
+            href="https://gdg.community.dev/gdg-on-campus-higher-institute-of-applied-science-and-technology-sousse-tunisia/"
+            class="navbar-project"
+          >
+            <img class="navbar-logo" alt="logo" src="/static/gdg-logo.png" />
+            <h1 class="navbar-title">Google Developer Groups</h1>
+          </a>
+        </nav>
+        <div class="main-container">
+          <img class="main-banner" src="/static/gdg-banner.png" alt="banner" />
+          <div class="main-card">
+            <h1 class="main-card-title">Generate short link</h1>
+            <p class="main-card-description">
+              Enter a long URL to make a shorter one
+            </p>
+            <input
+              type="text"
+              id="urlInput"
+              class="main-card-input"
+              placeholder="Enter a long URL"
+            />
+            <button class="main-card-button" onclick="generateShortLink()">
+              Generate
+            </button>
+
+            <!-- Error message area -->
+            <p id="errorMessage" class="error-message">{{ .Error }}</p>
+
+            <!-- Display the generated short link here -->
+            <a id="generatedLink" href="#" class="main-card-generated-link">
+              Shortened URL
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script src="/static/script.js"></script>
+  </body>
+</html>
