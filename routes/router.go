@@ -53,9 +53,16 @@ func SetupRoutes(db *sql.DB) *gin.Engine {
 
 	router := gin.Default()
 
-	router.POST("/shorten", urlHandler.HandlePostUrl)
-	router.GET("/:short_code", urlHandler.HandleGetUrl)
 	router.Use(rateLimitMiddleware())
+
+	router.GET("/", urlHandler.HandleGetHome)
+	router.POST("/api/v1/shorten", urlHandler.HandlePostUrl)
+	router.GET("/r/:short_code", urlHandler.HandleGetUrl)
+
+	router.NoRoute(urlHandler.HandleGetHome)
+
+	router.Static("/static", "./assets/templates")
+	router.LoadHTMLGlob("assets/templates/*.html")
 
 	return router
 
