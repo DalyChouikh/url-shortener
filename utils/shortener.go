@@ -6,6 +6,7 @@ import (
 	"errors"
 	"log"
 	"net/url"
+	"os"
 )
 
 func GenerateShortCode() string {
@@ -27,4 +28,12 @@ func IsValidUrl(u string) (bool, error) {
 	}
 
 	return true, nil
+}
+
+func GetBaseURL() string {
+	if os.Getenv("ENV") == "development" {
+		return "http://localhost:8080"
+	} else {
+		return "https://gdgclinky.onrender.com"
+	}
 }
