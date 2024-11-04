@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"log"
 	"net/http"
-	"os"
 
 	"github.com/DalyChouikh/url-shortener/models"
 	"github.com/DalyChouikh/url-shortener/utils"
@@ -17,6 +16,10 @@ type UrlHandler struct {
 
 func NewUrlHandler(db *sql.DB) *UrlHandler {
 	return &UrlHandler{db: db}
+}
+
+func (h *UrlHandler) HandleGetHome(ctx *gin.Context) {
+	ctx.HTML(http.StatusOK, "home.html", nil)
 }
 
 func (h *UrlHandler) HandlePostUrl(ctx *gin.Context) {
@@ -43,19 +46,19 @@ func (h *UrlHandler) HandlePostUrl(ctx *gin.Context) {
 		return
 	}
 
-	if env := os.Getenv("ENV"); env == "development" {
-		ctx.JSON(http.StatusOK, gin.H{"short_url": "http://localhost:8080/" + shortCode})
-	} else {
-		ctx.JSON(http.StatusOK, gin.H{"short_url": "https://gdgclinky.onrender.com/" + shortCode})
-	}
-
+	shortUrl := utils.GetBaseURL() + "/r/" + shortCode
+	ctx.JSON(http.StatusOK, gin.H{
+		"short_url": shortUrl,
+	})
 }
 
 func (h *UrlHandler) HandleGetUrl(ctx *gin.Context) {
 	shortCode := ctx.Param("short_code")
 	longUrl, err := models.GetUrl(h.db, shortCode)
 	if err != nil {
-		ctx.JSON(http.StatusNotFound, gin.H{"error": "Invalid code"})
+		ctx.HTML(http.StatusNotFound, "home.html", gin.H{
+			"Error": "Invalid code",
+		})
 		return
 	}
 
