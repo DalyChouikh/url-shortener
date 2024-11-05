@@ -49,7 +49,6 @@ button {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 70px;
   padding: 30px 22px;
   border-bottom: 2px solid #e0e0e0;
   width: 100%;
