@@ -25,6 +25,10 @@ button {
 .navbar-project {
   display: flex;
   align-items: center;
+  text-decoration: none;
+  /*color: #686d76;*/
+  color: #5f6368;
+  transition: color 0.3s ease;
 }
 
 .navbar-logo {
@@ -45,36 +49,19 @@ button {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 30px 22px;
   height: 70px;
+  padding: 30px 22px;
   border-bottom: 2px solid #e0e0e0;
   width: 100%;
-}
-
-.navbar-links {
-  display: flex;
-  align-items: center;
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.navbar-home,
-.navbar-about,
-.navbar-contact,
-.navbar-project {
-  text-decoration: none;
-  /*color: #686d76;*/
-  color: #5f6368;
-  transition: color 0.3s ease;
 }
 
 .navbar-link {
   text-decoration: none;
   font-size: 16px;
   font-weight: 500;
-  margin-right: 20px;
-  margin-left: 20px;
+  margin: 0 20px;
+  color: #5f6368;
+  transition: color 0.3s ease;
 }
 
 a:hover {
@@ -86,6 +73,7 @@ a:hover {
   flex-direction: column;
   align-items: center;
   margin-top: 50px;
+  padding: 0 20px;
 }
 
 .container {
@@ -106,7 +94,8 @@ a:hover {
   flex-direction: column;
   align-items: center;
   width: 50%;
-  height: 500px;
+  height: auto;
+  padding: 20px;
   border-radius: 10px;
   border: 2px solid #e0e0e0;
   background-color: #f8f9fa;
@@ -119,6 +108,7 @@ a:hover {
 .main-card-description {
   color: #686d76;
   margin: 20px;
+  font-weight: 600;
 }
 
 .main-card-button {
@@ -130,13 +120,10 @@ a:hover {
   margin: 20px;
   cursor: pointer;
   border: none;
-  font-family:
-    Product Sans,
-    sans-serif;
 }
 
 .main-card-button:hover {
-  background-color: rgb(26, 115, 232, 0.8);
+  background-color: rgba(26, 115, 232, 0.8);
 }
 
 .main-card-input {
@@ -147,39 +134,26 @@ a:hover {
   border: 2px solid #e0e0e0;
 }
 
-.main-card-link {
-  width: 60%;
-  height: 50px;
-  padding: 10px;
-  border: 1px solid #bdc3c7;
-  border-radius: 5px;
-  background-color: #bdc3c7;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
 .error-message {
   color: red;
   font-weight: 600;
+}
+
+.link-container {
+  display: flex;
+  align-items: center;
+  visibility: hidden;
 }
 
 .main-card-generated-link {
   text-decoration: none;
   color: #2c3e50;
   font-weight: 600;
-  height: 50px;
   padding: 10px;
   border: 1px solid #bdc3c7;
   border-radius: 5px;
   background-color: #bdc3c7;
   display: none;
-  align-items: center;
-}
-
-.link-container {
-  visibility: hidden;
-  display: flex;
   align-items: center;
 }
 
@@ -192,11 +166,67 @@ a:hover {
   font-size: 1.2em;
 }
 
-.main-card-generated-link:hover {
-  color: #34495e;
-  text-decoration: underline;
+/* Responsive Styles */
+@media (max-width: 768px) {
+  .navbar {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .main-container {
+    margin-top: 20px;
+    padding: 0 10px;
+  }
+
+  .main-banner,
+  .main-card {
+    width: 80%;
+  }
+
+  .navbar-title {
+    font-size: 18px;
+  }
+
+  .navbar-logo {
+    width: 60px;
+    height: auto;
+  }
+
+  .main-card-title {
+    font-size: 1.5rem;
+  }
+
+  .main-card-description,
+  .main-card-button,
+  .main-card-input,
+  .error-message {
+    width: 100%;
+    font-size: 1rem;
+  }
 }
 
-.main-card-description {
-  font-weight: 600;
+@media (max-width: 480px) {
+  .main-card,
+  .main-banner {
+    width: 100%;
+  }
+
+  .navbar-title {
+    font-size: 16px;
+  }
+
+  .main-card-title {
+    font-size: 1.2rem;
+  }
+
+  .main-card-description,
+  .main-card-input,
+  .main-card-button {
+    font-size: 0.9rem;
+    padding: 8px 12px;
+  }
+
+  .navbar {
+    padding: 20px 15px;
+  }
 }
