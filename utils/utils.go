@@ -5,8 +5,10 @@ import (
 	"encoding/base64"
 	"errors"
 	"log"
+	"net/http"
 	"net/url"
 	"os"
+	"time"
 )
 
 func GenerateShortCode() string {
@@ -35,5 +37,14 @@ func GetBaseURL() string {
 		return "http://localhost:8080"
 	} else {
 		return "https://gdgc-issatso.onrender.com"
+	}
+}
+
+func KeepAlive() {
+	for {
+		time.Sleep(time.Minute * 5)
+		if _, err := http.Get(GetBaseURL() + "/ping"); err != nil {
+			log.Fatal(err)
+		}
 	}
 }
