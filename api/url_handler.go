@@ -22,6 +22,12 @@ func (h *UrlHandler) HandleGetHome(ctx *gin.Context) {
 	ctx.HTML(http.StatusOK, "home.html", nil)
 }
 
+func (h *UrlHandler) HandleGetPing(ctx *gin.Context) {
+	ctx.JSON(http.StatusOK, gin.H{
+		"message": "pong",
+	})
+}
+
 func (h *UrlHandler) HandlePostUrl(ctx *gin.Context) {
 	var request struct {
 		LongUrl string `json:"long_url"`

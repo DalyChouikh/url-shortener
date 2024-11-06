@@ -55,6 +55,7 @@ func SetupRoutes(db *sql.DB) *gin.Engine {
 
 	router.Use(rateLimitMiddleware())
 
+	router.GET("/ping", urlHandler.HandleGetPing)
 	router.GET("/", urlHandler.HandleGetHome)
 	router.POST("/api/v1/shorten", urlHandler.HandlePostUrl)
 	router.GET("/r/:short_code", urlHandler.HandleGetUrl)
