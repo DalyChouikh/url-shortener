@@ -47,14 +47,20 @@ func (h *UrlHandler) HandlePostUrl(ctx *gin.Context) {
 	shortCode := utils.GenerateShortCode()
 	if err := models.SaveUrl(h.db, request.LongUrl, shortCode); err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save URL"})
-		log.Println(shortCode)
 		log.Fatal(err)
 		return
 	}
 
 	shortUrl := utils.GetBaseURL() + "/r/" + shortCode
+	qrCodeImage, err := utils.GenerateQRCodeImage(shortUrl)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate QR code"})
+		log.Fatal(err)
+		return
+	}
 	ctx.JSON(http.StatusOK, gin.H{
 		"short_url": shortUrl,
+		"qrcode":    qrCodeImage,
 	})
 }
 
