@@ -48,12 +48,22 @@ func rateLimitMiddleware() gin.HandlerFunc {
 	}
 }
 
+func staticCacheMiddleware() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		if ctx.Request.URL.Path == "/static" {
+			ctx.Header("Cache-Control", "public, max-age=604800")
+		}
+		ctx.Next()
+	}
+}
+
 func SetupRoutes(db *sql.DB) *gin.Engine {
 	urlHandler := api.NewUrlHandler(db)
 
 	router := gin.Default()
 
 	router.Use(rateLimitMiddleware())
+	router.Use(staticCacheMiddleware())
 
 	router.GET("/ping", urlHandler.HandleGetPing)
 	router.GET("/", urlHandler.HandleGetHome)
