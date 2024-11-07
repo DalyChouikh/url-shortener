@@ -3,6 +3,7 @@ package routes
 import (
 	"database/sql"
 	"net/http"
+	"strings"
 	"sync"
 	"time"
 
@@ -50,7 +51,7 @@ func rateLimitMiddleware() gin.HandlerFunc {
 
 func staticCacheMiddleware() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		if ctx.Request.URL.Path == "/static" {
+		if strings.HasPrefix(ctx.Request.URL.Path, "/static/") {
 			ctx.Header("Cache-Control", "public, max-age=604800")
 		}
 		ctx.Next()
