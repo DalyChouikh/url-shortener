@@ -165,6 +165,20 @@ a:hover {
   font-size: 1.2em;
 }
 
+.qr-code-container {
+  font-weight: bold;
+  display: flex;
+  justify-content: center;
+  margin-top: 15px;
+  width: 100%;
+}
+
+.qr-code-container svg {
+  max-width: 100%;
+  height: auto;
+  width: 150px; /* Default width */
+}
+
 /* Responsive Styles */
 @media (max-width: 768px) {
   .navbar {
@@ -227,5 +241,9 @@ a:hover {
 
   .navbar {
     padding: 20px 15px;
+  }
+
+  .qr-code-container svg {
+    width: 100px; /* Smaller QR code size for small screens */
   }
 }
