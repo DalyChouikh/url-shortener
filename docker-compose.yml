@@ -8,6 +8,6 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres123
-      POSTGRES_DB: gdgclinky
+      POSTGRES_DB: gdgc-issatso
     volumes:
-      - /home/dev-daly/gdgclinky/data:/var/lib/postgresql/data
+      - /home/dev-daly/gdgc-issatso/data:/var/lib/postgresql/data
