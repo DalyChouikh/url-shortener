@@ -39,9 +39,25 @@ async function generateShortLink() {
 
 function generateCode(qrcode) {
   const qrCodeContainer = document.getElementById("qrCodeContainer");
+  const downloadButton = document.getElementById("downloadButton");
   const qrCodeNode = document.createElement("img");
+  qrCodeContainer.innerHTML = "";
   qrCodeNode.src = `data:image/png;base64, ${qrcode}`;
+  qrCodeNode.alt = "QR Code";
+  qrCodeNode.id = "qrCodeImage";
   qrCodeContainer.appendChild(qrCodeNode);
+
+  downloadButton.style.display = "inline-block";
+}
+
+function downloadQRCode() {
+  const qrCodeImage = document.getElementById("qrCodeImage");
+  const downloadLink = document.createElement("a");
+  downloadLink.href = qrCodeImage.src;
+  downloadLink.download = "qr_code.png";
+  qrCodeImage.appendChild(downloadLink);
+  downloadLink.click();
+  qrCodeImage.removeChild(downloadLink);
 }
 
 function copyLink() {
