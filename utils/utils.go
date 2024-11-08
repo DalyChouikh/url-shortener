@@ -62,7 +62,7 @@ func GetBaseURL() string {
 	if os.Getenv("ENV") == "development" {
 		return "http://localhost:8080"
 	} else {
-		return "https://gdgc-issatso.onrender.com"
+		return "https://gdgc-issatso.tech"
 	}
 }
 
