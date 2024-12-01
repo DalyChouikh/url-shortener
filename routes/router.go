@@ -1,13 +1,13 @@
 package routes
 
 import (
-	"database/sql"
 	"net/http"
 	"strings"
 	"sync"
 	"time"
 
-	"github.com/DalyChouikh/url-shortener/api"
+	"github.com/DalyChouikh/url-shortener/handlers"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/time/rate"
 )
@@ -58,18 +58,17 @@ func staticCacheMiddleware() gin.HandlerFunc {
 	}
 }
 
-func SetupRoutes(db *sql.DB) *gin.Engine {
-	urlHandler := api.NewUrlHandler(db)
-
+func SetupRoutes(urlHandler handlers.URLHandler) *gin.Engine {
 	router := gin.Default()
 
 	router.Use(rateLimitMiddleware())
 	router.Use(staticCacheMiddleware())
+	router.Use(cors.Default())
 
 	router.GET("/ping", urlHandler.HandleGetPing)
 	router.GET("/", urlHandler.HandleGetHome)
-	router.POST("/api/v1/shorten", urlHandler.HandlePostUrl)
-	router.GET("/r/:short_code", urlHandler.HandleGetUrl)
+	router.POST("/api/v1/shorten", urlHandler.HandleShortenURL)
+	router.GET("/r/:short_code", urlHandler.HandleRedirect)
 
 	router.NoRoute(urlHandler.HandleGetHome)
 
@@ -77,5 +76,4 @@ func SetupRoutes(db *sql.DB) *gin.Engine {
 	router.LoadHTMLGlob("assets/templates/*.html")
 
 	return router
-
 }
