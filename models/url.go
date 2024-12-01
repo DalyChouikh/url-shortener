@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"log"
 	"time"
 )
 
@@ -25,7 +26,7 @@ func NewURLRepository(db *sql.DB) *URLRepository {
 
 func (r *URLRepository) Save(ctx context.Context, url *URL) error {
 	query := `
-	INSERT INTO URL (long_url, short_url, created_at)
+	INSERT INTO URL (long_url, short_code, created_at)
 	VALUES($1, $2, $3)
 	RETURNING id`
 	err := r.db.QueryRowContext(ctx, query, url.LongURL, url.ShortCode, time.Now()).Scan(&url.ID)
