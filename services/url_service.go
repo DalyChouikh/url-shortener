@@ -10,6 +10,7 @@ import (
 	"image/png"
 	"log"
 	"net/url"
+	"strings"
 
 	"github.com/DalyChouikh/url-shortener/models"
 	"github.com/boombuler/barcode"
@@ -72,7 +73,8 @@ func (s *URLService) isValidURL(longURL string) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	if parsedURL.Scheme == "" || parsedURL.Host == "" {
+	fmt.Println(parsedURL.Scheme, parsedURL.Host)
+	if parsedURL.Scheme == "" || parsedURL.Host == "" || !strings.HasPrefix(parsedURL.Scheme, "http") {
 		return false, errors.New("Invalid URL Scheme or Host")
 	}
 	return true, nil
