@@ -63,3 +63,13 @@ func (h *URLHandler) HandleRedirect(c *gin.Context) {
 
 	c.Redirect(http.StatusMovedPermanently, longURL)
 }
+
+func (h *URLHandler) HandleGetHome(ctx *gin.Context) {
+	ctx.HTML(http.StatusOK, "home.html", nil)
+}
+
+func (h *URLHandler) HandleGetPing(ctx *gin.Context) {
+	ctx.JSON(http.StatusOK, gin.H{
+		"message": "pong",
+	})
+}
