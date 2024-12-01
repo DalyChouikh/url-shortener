@@ -1,12 +1,17 @@
 package main
 
 import (
+	"fmt"
+	"log"
+	"net/http"
 	"os"
 
 	"github.com/DalyChouikh/url-shortener/config"
+	"github.com/DalyChouikh/url-shortener/handlers"
+	"github.com/DalyChouikh/url-shortener/models"
 	"github.com/DalyChouikh/url-shortener/routes"
+	"github.com/DalyChouikh/url-shortener/services"
 	"github.com/DalyChouikh/url-shortener/utils"
-	"github.com/gin-contrib/cors"
 	"github.com/joho/godotenv"
 )
 
@@ -15,28 +20,50 @@ const (
 	PRODUCTION  = "production"
 )
 
-func init() {
-	env := os.Getenv("ENV")
-	if env == "" {
-		os.Setenv("ENV", "development")
+func main() {
+	if err := run(); err != nil {
+		log.Fatal(err)
 	}
 }
 
-func main() {
-	env := os.Getenv("ENV")
-	if env == DEVELOPMENT {
-		godotenv.Load(".env.development")
+func run() error {
+	env := getEnv("ENV", DEVELOPMENT)
+	if err := godotenv.Load(".env." + env); err != nil {
+		log.Printf("Warning: Error loading .env file: %v", err)
 	}
-	if env == PRODUCTION {
-		godotenv.Load(".env.production")
+
+	cfg := config.NewConfig(
+		env,
+		os.Getenv("DATABASE_CONNECTION_STRING"),
+	)
+
+	db, err := config.InitDB(cfg.DBConfig)
+	if err != nil {
+		return err
 	}
-	databaseConnectionString := os.Getenv("DATABASE_CONNECTION_STRING")
-	db := config.SetupDatabase(databaseConnectionString)
+
 	defer db.Close()
 
-	router := routes.SetupRoutes(db)
-	router.Use(cors.Default())
+	urlRepo := models.NewURLRepository(db)
+	urlService := services.NewURLService(urlRepo, cfg.BaseURL)
+	urlHandler := handlers.NewURLHandler(urlService)
 
+	router := routes.SetupRoutes(*urlHandler)
+
+	srv := &http.Server{
+		Addr:    fmt.Sprintf(":%d", cfg.Server.Port),
+		Handler: router,
+	}
+	if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		return fmt.Errorf("Server error: %w", err)
+	}
 	go utils.KeepAlive()
-	router.Run(":8080")
+	return nil
+}
+
+func getEnv(key, fallback string) string {
+	if value, exists := os.LookupEnv(key); exists {
+		return value
+	}
+	return fallback
 }
