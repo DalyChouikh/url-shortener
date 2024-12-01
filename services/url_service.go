@@ -63,6 +63,10 @@ func (s *URLService) GetLongURL(ctx context.Context, shortCode string) (string, 
 	return url.LongURL, nil
 }
 
+func (s *URLService) BaseURL() string {
+	return s.baseURL
+}
+
 func (s *URLService) isValidURL(longURL string) (bool, error) {
 	parsedURL, err := url.ParseRequestURI(longURL)
 	if err != nil {
