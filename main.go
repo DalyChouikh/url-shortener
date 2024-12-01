@@ -5,13 +5,13 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/DalyChouikh/url-shortener/config"
 	"github.com/DalyChouikh/url-shortener/handlers"
 	"github.com/DalyChouikh/url-shortener/models"
 	"github.com/DalyChouikh/url-shortener/routes"
 	"github.com/DalyChouikh/url-shortener/services"
-	"github.com/DalyChouikh/url-shortener/utils"
 	"github.com/joho/godotenv"
 )
 
@@ -54,10 +54,10 @@ func run() error {
 		Addr:    fmt.Sprintf(":%d", cfg.Server.Port),
 		Handler: router,
 	}
+	go keepAlive(cfg.BaseURL)
 	if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		return fmt.Errorf("Server error: %w", err)
 	}
-	go utils.KeepAlive()
 	return nil
 }
 
@@ -66,4 +66,13 @@ func getEnv(key, fallback string) string {
 		return value
 	}
 	return fallback
+}
+
+func keepAlive(baseURL string) {
+	for {
+		time.Sleep(time.Minute * 5)
+		if _, err := http.Get(baseURL + "/ping"); err != nil {
+			log.Fatal(err)
+		}
+	}
 }
