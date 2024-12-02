@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -37,14 +38,16 @@ func run() error {
 		os.Getenv("DATABASE_CONNECTION_STRING"),
 	)
 
-	db, err := config.InitDB(cfg.DBConfig)
+	ctx := context.Background()
+
+	conn, err := config.InitDB(ctx, cfg.DBConfig)
 	if err != nil {
 		return err
 	}
 
-	defer db.Close()
+	defer conn.Close(ctx)
 
-	urlRepo := models.NewURLRepository(db)
+	urlRepo := models.NewURLRepository(conn)
 	urlService := services.NewURLService(urlRepo, cfg.BaseURL)
 	urlHandler := handlers.NewURLHandler(urlService)
 

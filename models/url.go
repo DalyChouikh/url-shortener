@@ -4,7 +4,10 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"log"
 	"time"
+
+	"github.com/jackc/pgx/v5"
 )
 
 type URL struct {
@@ -16,11 +19,11 @@ type URL struct {
 }
 
 type URLRepository struct {
-	db *sql.DB
+	conn *pgx.Conn
 }
 
-func NewURLRepository(db *sql.DB) *URLRepository {
-	return &URLRepository{db: db}
+func NewURLRepository(conn *pgx.Conn) *URLRepository {
+	return &URLRepository{conn: conn}
 }
 
 func (r *URLRepository) Save(ctx context.Context, url *URL) error {
@@ -28,8 +31,9 @@ func (r *URLRepository) Save(ctx context.Context, url *URL) error {
 	INSERT INTO URL (long_url, short_code, created_at)
 	VALUES($1, $2, $3)
 	RETURNING id`
-	err := r.db.QueryRowContext(ctx, query, url.LongURL, url.ShortCode, time.Now()).Scan(&url.ID)
+	err := r.conn.QueryRow(ctx, query, url.LongURL, url.ShortCode, url.CreatedAt).Scan(&url.ID)
 	if err != nil {
+		log.Println(err)
 		return fmt.Errorf("failed to save URL: %w", err)
 	}
 	return nil
@@ -42,7 +46,7 @@ func (r *URLRepository) GetByShortCode(ctx context.Context, shortCode string) (*
 	SET clicks = clicks + 1
 	WHERE short_code = $1
 	RETURNING id, long_url, short_code, created_at, clicks`
-	err := r.db.QueryRowContext(ctx, query, shortCode).Scan(&url.ID, &url.LongURL, &url.ShortCode, &url.CreatedAt, &url.Clicks)
+	err := r.conn.QueryRow(ctx, query, shortCode).Scan(&url.ID, &url.LongURL, &url.ShortCode, &url.CreatedAt, &url.Clicks)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, fmt.Errorf("URL not found: %w", err)

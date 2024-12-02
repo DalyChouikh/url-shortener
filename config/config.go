@@ -1,9 +1,10 @@
 package config
 
 import (
-	"database/sql"
+	"context"
 	"fmt"
-	_ "github.com/lib/pq"
+
+	"github.com/jackc/pgx/v5"
 )
 
 type Config struct {
@@ -39,14 +40,15 @@ func NewConfig(env, dbConnString string) *Config {
 	}
 }
 
-func InitDB(cfg DatabaseConfig) (*sql.DB, error) {
-	db, err := sql.Open("postgres", cfg.ConnectionString)
+func InitDB(ctx context.Context, cfg DatabaseConfig) (*pgx.Conn, error) {
+	conn, err := pgx.Connect(ctx, cfg.ConnectionString)
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to database: %w", err)
 	}
-	if err := db.Ping(); err != nil {
+
+	if err := conn.Ping(ctx); err != nil {
 		return nil, fmt.Errorf("failed to ping database: %w", err)
 	}
 
-	return db, nil
+	return conn, nil
 }
