@@ -36,22 +36,24 @@ func (s *URLService) CreateShortURL(ctx context.Context, longURL string, userID 
 		return nil, "", fmt.Errorf("Failed to generate short code: %w", err)
 	}
 
+	shortURL := fmt.Sprintf("%s/r/%s", s.baseURL, shortCode)
+	qrCode, err := s.generateQRCode(shortURL)
+	if err != nil {
+		log.Printf("Error generating QR Code: %v", err)
+		return nil, "", err
+	}
+
 	url := &models.URL{
 		LongURL:   longURL,
 		ShortCode: shortCode,
 		UserID:    userID,
+		QRCode:    qrCode,
 	}
 
 	if err := s.repo.Save(url); err != nil {
 		return nil, "", err
 	}
 
-	shortURL := fmt.Sprintf("%s/r/%s", s.baseURL, shortCode)
-	qrCode, err := s.generateQRCode(shortURL)
-	if err != nil {
-		log.Printf("Error generating QR Code: %v", err)
-		return url, "", err
-	}
 	return url, qrCode, nil
 }
 

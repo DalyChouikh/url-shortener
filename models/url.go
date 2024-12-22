@@ -11,10 +11,11 @@ type URL struct {
 	Clicks    int64  `gorm:"default:0"`
 	UserID    uint   `gorm:"not null"`
 	User      User   `gorm:"foreignKey:UserID"`
+	QRCode    string `gorm:"type:text"`
 }
 
 func (URL) TableName() string {
-	return "url" // This tells GORM to use "url" as the table name
+	return "url"
 }
 
 type URLRepository struct {
