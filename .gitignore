@@ -1,4 +1,5 @@
 bin/
-.env*
+.env.development
+.env.production
 *.log
 *.tmp
