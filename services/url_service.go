@@ -26,7 +26,7 @@ func NewURLService(repo *models.URLRepository, baseURL string) *URLService {
 	return &URLService{repo: repo, baseURL: baseURL}
 }
 
-func (s *URLService) CreateShortURL(ctx context.Context, longURL string) (*models.URL, string, error) {
+func (s *URLService) CreateShortURL(ctx context.Context, longURL string, userID uint) (*models.URL, string, error) {
 	if valid, err := s.isValidURL(longURL); !valid {
 		return nil, "", fmt.Errorf("Invalid URL: %w", err)
 	}
@@ -39,29 +39,33 @@ func (s *URLService) CreateShortURL(ctx context.Context, longURL string) (*model
 	url := &models.URL{
 		LongURL:   longURL,
 		ShortCode: shortCode,
+		UserID:    userID,
 	}
 
-	if err := s.repo.Save(ctx, url); err != nil {
+	if err := s.repo.Save(url); err != nil {
 		return nil, "", err
 	}
 
 	shortURL := fmt.Sprintf("%s/r/%s", s.baseURL, shortCode)
 	qrCode, err := s.generateQRCode(shortURL)
 	if err != nil {
-		log.Println("Error generating QR Code: %w", err)
+		log.Printf("Error generating QR Code: %v", err)
 		return url, "", err
 	}
 	return url, qrCode, nil
-
 }
 
 func (s *URLService) GetLongURL(ctx context.Context, shortCode string) (string, error) {
-	url, err := s.repo.GetByShortCode(ctx, shortCode)
+	url, err := s.repo.GetByShortCode(shortCode)
 	if err != nil {
 		return "", err
 	}
 
 	return url.LongURL, nil
+}
+
+func (s *URLService) GetUserURLs(userID uint) ([]models.URL, error) {
+	return s.repo.GetUserURLs(userID)
 }
 
 func (s *URLService) BaseURL() string {

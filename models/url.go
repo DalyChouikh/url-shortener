@@ -1,57 +1,46 @@
 package models
 
 import (
-	"context"
-	"database/sql"
-	"fmt"
-	"log"
-	"time"
-
-	"github.com/jackc/pgx/v5"
+	"gorm.io/gorm"
 )
 
 type URL struct {
-	ID        int64
-	LongURL   string
-	ShortCode string
-	CreatedAt time.Time
-	Clicks    int64
+	gorm.Model
+	LongURL   string `gorm:"not null"`
+	ShortCode string `gorm:"uniqueIndex;not null"`
+	Clicks    int64  `gorm:"default:0"`
+	UserID    uint   `gorm:"not null"`
+	User      User   `gorm:"foreignKey:UserID"`
+}
+
+func (URL) TableName() string {
+	return "url" // This tells GORM to use "url" as the table name
 }
 
 type URLRepository struct {
-	conn *pgx.Conn
+	db *gorm.DB
 }
 
-func NewURLRepository(conn *pgx.Conn) *URLRepository {
-	return &URLRepository{conn: conn}
+func NewURLRepository(db *gorm.DB) *URLRepository {
+	return &URLRepository{db: db}
 }
 
-func (r *URLRepository) Save(ctx context.Context, url *URL) error {
-	query := `
-	INSERT INTO URL (long_url, short_code, created_at)
-	VALUES($1, $2, $3)
-	RETURNING id`
-	err := r.conn.QueryRow(ctx, query, url.LongURL, url.ShortCode, url.CreatedAt).Scan(&url.ID)
+func (r *URLRepository) Save(url *URL) error {
+	return r.db.Create(url).Error
+}
+
+func (r *URLRepository) GetByShortCode(shortCode string) (*URL, error) {
+	var url URL
+	err := r.db.Where("short_code = ?", shortCode).First(&url).Error
 	if err != nil {
-		log.Println(err)
-		return fmt.Errorf("failed to save URL: %w", err)
+		return nil, err
 	}
-	return nil
+	r.db.Model(&url).UpdateColumn("clicks", gorm.Expr("clicks + ?", 1))
+	return &url, nil
 }
 
-func (r *URLRepository) GetByShortCode(ctx context.Context, shortCode string) (*URL, error) {
-	url := &URL{}
-	query := `
-	UPDATE URL
-	SET clicks = clicks + 1
-	WHERE short_code = $1
-	RETURNING id, long_url, short_code, created_at, clicks`
-	err := r.conn.QueryRow(ctx, query, shortCode).Scan(&url.ID, &url.LongURL, &url.ShortCode, &url.CreatedAt, &url.Clicks)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, fmt.Errorf("URL not found: %w", err)
-		}
-		return nil, fmt.Errorf("failed to get URL: %w", err)
-	}
-	return url, nil
+func (r *URLRepository) GetUserURLs(userID uint) ([]URL, error) {
+	var urls []URL
+	err := r.db.Where("user_id = ?", userID).Find(&urls).Error
+	return urls, err
 }
