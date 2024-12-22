@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -14,6 +13,8 @@ import (
 	"github.com/DalyChouikh/url-shortener/routes"
 	"github.com/DalyChouikh/url-shortener/services"
 	"github.com/joho/godotenv"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
 const (
@@ -38,20 +39,29 @@ func run() error {
 		os.Getenv("DATABASE_CONNECTION_STRING"),
 	)
 
-	ctx := context.Background()
-
-	conn, err := config.InitDB(ctx, cfg.DBConfig)
+	db, err := gorm.Open(postgres.Open(cfg.DBConfig.ConnectionString), &gorm.Config{})
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to connect database: %w", err)
 	}
 
-	defer conn.Close(ctx)
+	urlRepo := models.NewURLRepository(db)
+	userRepo := models.NewUserRepository(db)
 
-	urlRepo := models.NewURLRepository(conn)
 	urlService := services.NewURLService(urlRepo, cfg.BaseURL)
-	urlHandler := handlers.NewURLHandler(urlService)
+	authService := services.NewAuthService(
+		cfg.OAuth.GoogleClientID,
+		cfg.OAuth.GoogleClientSecret,
+		cfg.BaseURL+"/auth/callback",
+		userRepo,
+	)
 
-	router := routes.SetupRoutes(*urlHandler)
+	urlHandler := handlers.NewURLHandler(urlService)
+	authHandler := handlers.NewAuthHandler(authService)
+
+	router, err := routes.SetupRoutes(*urlHandler, *authHandler, cfg)
+	if err != nil {
+		return fmt.Errorf("failed to setup routes: %w", err)
+	}
 
 	srv := &http.Server{
 		Addr:    fmt.Sprintf(":%d", cfg.Server.Port),
