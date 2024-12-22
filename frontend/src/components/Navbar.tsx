@@ -1,6 +1,8 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import logo from "../../public/gdg-logo.png";
+import { FaGoogle } from "react-icons/fa";
+import { MdLogout } from "react-icons/md";
 
 export default function Navbar() {
   const { user, logout } = useAuth();
@@ -45,16 +47,18 @@ export default function Navbar() {
             </Link>
             <button
               onClick={handleLogout}
-              className="text-red-600 hover:text-red-700 transition-colors"
+              className="bg-red-600 text-white px-4 py-2 rounded flex justify-center items-center hover:bg-red-800 transition-colors"
             >
+              <MdLogout className="mr-2" />
               Logout
             </button>
           </>
         ) : (
           <a
             href="http://localhost:8080/auth/login"
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
+            className="bg-blue-600 flex justify-center items-center text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
           >
+            <FaGoogle className="mr-2" />
             Login
           </a>
         )}
