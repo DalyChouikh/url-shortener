@@ -97,7 +97,7 @@ func SetupRoutes(urlHandler handlers.URLHandler, authHandler handlers.AuthHandle
 	{
 		auth.GET("/login", authHandler.HandleLogin)
 		auth.GET("/callback", authHandler.HandleCallback)
-		auth.GET("/logout", authHandler.HandleLogout)
+		auth.POST("/logout", authHandler.HandleLogout)
 		auth.GET("/profile", middleware.AuthRequired(), authHandler.HandleGetProfile)
 	}
 
