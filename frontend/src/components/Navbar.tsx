@@ -1,14 +1,23 @@
-import { Link } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
 import logo from "../../public/gdg-logo.png";
 
 export default function Navbar() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    await logout();
+    navigate("/");
+  };
 
   return (
     <nav className="flex items-center justify-between p-4 border-b-2 border-gray-200">
       <div className="flex items-center">
-        <Link to="/" className="flex items-center text-gray-600 hover:text-black transition-colors">
+        <Link
+          to="/"
+          className="flex items-center text-gray-600 hover:text-black transition-colors"
+        >
           <img src={logo} alt="GDG Logo" className="w-16 h-10 mr-4" />
           <h1 className="text-xl font-medium">Google Developer Groups</h1>
         </Link>
@@ -34,6 +43,12 @@ export default function Navbar() {
               />
               <span>{user.name}</span>
             </Link>
+            <button
+              onClick={handleLogout}
+              className="text-red-600 hover:text-red-700 transition-colors"
+            >
+              Logout
+            </button>
           </>
         ) : (
           <a
