@@ -3,15 +3,18 @@ package config
 import (
 	"context"
 	"fmt"
+	"os"
 
 	"github.com/jackc/pgx/v5"
 )
 
 type Config struct {
-	Environtment string
-	BaseURL      string
-	DBConfig     DatabaseConfig
-	Server       ServerConfig
+	Environment string
+	BaseURL     string
+	DBConfig    DatabaseConfig
+	Server      ServerConfig
+	OAuth       OAuthConfig
+	Session     SessionConfig
 }
 
 type DatabaseConfig struct {
@@ -22,6 +25,15 @@ type ServerConfig struct {
 	Port int
 }
 
+type OAuthConfig struct {
+	GoogleClientID     string
+	GoogleClientSecret string
+}
+
+type SessionConfig struct {
+	Secret string
+}
+
 func NewConfig(env, dbConnString string) *Config {
 	baseURL := "https://gdgc-issatso.tech"
 	if env == "development" {
@@ -29,13 +41,20 @@ func NewConfig(env, dbConnString string) *Config {
 	}
 
 	return &Config{
-		Environtment: env,
-		BaseURL:      baseURL,
+		Environment: env,
+		BaseURL:     baseURL,
 		DBConfig: DatabaseConfig{
 			ConnectionString: dbConnString,
 		},
 		Server: ServerConfig{
 			Port: 8080,
+		},
+		OAuth: OAuthConfig{
+			GoogleClientID:     os.Getenv("GOOGLE_CLIENT_ID"),
+			GoogleClientSecret: os.Getenv("GOOGLE_CLIENT_SECRET"),
+		},
+		Session: SessionConfig{
+			Secret: os.Getenv("SESSION_SECRET"),
 		},
 	}
 }
