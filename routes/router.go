@@ -6,10 +6,15 @@ import (
 	"sync"
 	"time"
 
+	"github.com/DalyChouikh/url-shortener/config"
+	"github.com/DalyChouikh/url-shortener/frontend"
 	"github.com/DalyChouikh/url-shortener/handlers"
-	"github.com/gin-contrib/cors"
+	"github.com/DalyChouikh/url-shortener/middleware"
+	"github.com/gin-contrib/sessions"
+	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/time/rate"
+	"io/fs"
 )
 
 var limiters = make(map[string]*rate.Limiter)
@@ -23,7 +28,7 @@ func getLimiter(ip string) *rate.Limiter {
 		return limiter
 	}
 
-	limiter := rate.NewLimiter(1, 5)
+	limiter := rate.NewLimiter(rate.Every(2*time.Second), 30)
 	limiters[ip] = limiter
 
 	go func() {
@@ -38,6 +43,19 @@ func getLimiter(ip string) *rate.Limiter {
 
 func rateLimitMiddleware() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
+		path := ctx.Request.URL.Path
+		referer := ctx.Request.Referer()
+
+		// Skip rate limiting for: static assets, auth routes, redirects, and Google avatar images
+		if strings.HasPrefix(path, "/auth/") ||
+			path == "/ping" ||
+			strings.HasPrefix(path, "/r/") ||
+			strings.Contains(referer, "googleusercontent.com") ||
+			strings.Contains(path, "googleusercontent.com") {
+			ctx.Next()
+			return
+		}
+
 		limiter := getLimiter(ctx.ClientIP())
 		if !limiter.Allow() {
 			ctx.AbortWithStatusJSON(http.StatusTooManyRequests, gin.H{
@@ -49,31 +67,48 @@ func rateLimitMiddleware() gin.HandlerFunc {
 	}
 }
 
-func staticCacheMiddleware() gin.HandlerFunc {
-	return func(ctx *gin.Context) {
-		if strings.HasPrefix(ctx.Request.URL.Path, "/static/") {
-			ctx.Header("Cache-Control", "public, max-age=604800")
-		}
-		ctx.Next()
-	}
-}
-
-func SetupRoutes(urlHandler handlers.URLHandler) *gin.Engine {
+func SetupRoutes(urlHandler handlers.URLHandler, authHandler handlers.AuthHandler, cfg *config.Config) (*gin.Engine, error) {
 	router := gin.Default()
 
-	router.Use(rateLimitMiddleware())
-	router.Use(staticCacheMiddleware())
-	router.Use(cors.Default())
+	store := cookie.NewStore([]byte(cfg.Session.Secret))
+	router.Use(sessions.Sessions("mysession", store))
 
-	router.GET("/ping", urlHandler.HandleGetPing)
-	router.GET("/", urlHandler.HandleGetHome)
-	router.POST("/api/v1/shorten", urlHandler.HandleShortenURL)
+	subFS, err := fs.Sub(frontend.FS(), "dist")
+	if err != nil {
+		return nil, err
+	}
+
+	spaHandler, err := handlers.NewSPAHandler(subFS)
+	if err != nil {
+		return nil, err
+	}
+
+	// API routes
+	api := router.Group("/api/v1")
+	api.Use(middleware.AuthRequired())
+	api.Use(rateLimitMiddleware())
+	{
+		api.POST("/shorten", urlHandler.HandleShortenURL)
+		api.GET("/urls", urlHandler.HandleGetUserURLs)
+	}
+
+	// Auth routes
+	auth := router.Group("/auth")
+	{
+		auth.GET("/login", authHandler.HandleLogin)
+		auth.GET("/callback", authHandler.HandleCallback)
+		auth.GET("/logout", authHandler.HandleLogout)
+		auth.GET("/profile", middleware.AuthRequired(), authHandler.HandleGetProfile)
+	}
+
+	// Redirect route
 	router.GET("/r/:short_code", urlHandler.HandleRedirect)
 
-	router.NoRoute(urlHandler.HandleGetHome)
+	// Health check
+	router.GET("/ping", urlHandler.HandleGetPing)
 
-	router.Static("/static", "./assets/templates")
-	router.LoadHTMLGlob("assets/templates/*.html")
+	// Serve SPA for all other routes
+	router.NoRoute(spaHandler.ServeFiles)
 
-	return router
+	return router, nil
 }
