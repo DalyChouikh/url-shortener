@@ -1,4 +1,4 @@
-.PHONY: frontend migrate-local migrate-production build start dev
+.PHONY: frontend migrate-local migrate-production build start dev create-migration
 
 migrate-local:
 	@goose -dir assets/migrations postgres "user=postgres password=postgres123 host=localhost sslmode=disable dbname=gdgc-issatso" up
@@ -18,4 +18,11 @@ start: build
 
 dev: frontend
 	@go run main.go
+
+create-migration:
+	@if [ -z "$(name)" ]; then \
+		echo "Please provide a migration name. Usage: make create-migration name=your_migration_name"; \
+		exit 1; \
+	fi
+	@goose -dir assets/migrations create $(name) sql
 
