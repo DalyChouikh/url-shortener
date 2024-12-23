@@ -13,12 +13,13 @@ export default function ShortLinkGenerator() {
     setError("");
 
     try {
-      const response = await fetch("http://localhost:8080/api/v1/shorten", {
+      const response = await fetch("/api/v1/shorten", {
         method: "POST",
-        credentials: 'include',
+        credentials: "include",
         headers: {
           "Content-Type": "application/json",
-          "Accept": "application/json",
+          Accept: "application/json",
+          "X-Requested-With": "XMLHttpRequest",
         },
         body: JSON.stringify({ long_url: longUrl }),
       });
