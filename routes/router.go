@@ -125,7 +125,7 @@ func SetupRoutes(urlHandler handlers.URLHandler, authHandler handlers.AuthHandle
 			c.Header("Cache-Control", "no-cache, no-store, must-revalidate")
 			authHandler.HandleCallback(c)
 		})
-		auth.POST("/logout", middleware.AjaxRequired(), authHandler.HandleLogout)                         
+		auth.POST("/logout", middleware.AjaxRequired(), authHandler.HandleLogout)
 		auth.GET("/profile", middleware.AuthRequired(), middleware.AjaxRequired(), func(c *gin.Context) {
 			c.Header("Cache-Control", "no-cache, no-store, must-revalidate")
 			authHandler.HandleGetProfile(c)
