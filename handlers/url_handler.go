@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/DalyChouikh/url-shortener/services"
-	"github.com/gin-gonic/gin"
 	"github.com/gin-contrib/sessions"
+	"github.com/gin-gonic/gin"
 )
 
 type URLHandler struct {
@@ -56,20 +56,13 @@ func (h *URLHandler) HandleShortenURL(c *gin.Context) {
 func (h *URLHandler) HandleRedirect(c *gin.Context) {
 	shortCode := c.Param("short_code")
 
-	ctx, cancel := context.WithTimeout(c.Request.Context(), 5*time.Second)
-	defer cancel()
-
-	longURL, err := h.urlService.GetLongURL(ctx, shortCode)
+	longURL, err := h.urlService.GetLongURL(shortCode)
 	if err != nil {
-		c.HTML(http.StatusNotFound, "home.html", gin.H{"error": "Short URL not found"})
+		c.JSON(http.StatusNotFound, gin.H{"error": "URL not found"})
 		return
 	}
 
 	c.Redirect(http.StatusMovedPermanently, longURL)
-}
-
-func (h *URLHandler) HandleGetHome(ctx *gin.Context) {
-	ctx.HTML(http.StatusOK, "home.html", nil)
 }
 
 func (h *URLHandler) HandleGetPing(ctx *gin.Context) {
