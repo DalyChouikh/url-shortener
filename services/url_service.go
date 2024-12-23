@@ -57,7 +57,7 @@ func (s *URLService) CreateShortURL(ctx context.Context, longURL string, userID 
 	return url, qrCode, nil
 }
 
-func (s *URLService) GetLongURL(ctx context.Context, shortCode string) (string, error) {
+func (s *URLService) GetLongURL(shortCode string) (string, error) {
 	url, err := s.repo.GetByShortCode(shortCode)
 	if err != nil {
 		return "", err
