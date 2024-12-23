@@ -27,48 +27,73 @@ func (h *AuthHandler) HandleLogin(c *gin.Context) {
 func (h *AuthHandler) HandleCallback(c *gin.Context) {
 	code := c.Query("code")
 	if code == "" {
-		c.Redirect(http.StatusTemporaryRedirect, "/")
+		c.JSON(http.StatusBadRequest, gin.H{"error": "No code provided"})
 		return
 	}
 
 	user, err := h.authService.HandleCallback(code)
 	if err != nil {
-		c.Redirect(http.StatusTemporaryRedirect, "/")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Authentication failed"})
 		return
 	}
 
 	session := sessions.Default(c)
-	session.Clear() // Clear any existing session data
+	session.Clear()
 	session.Set("user_id", user.ID)
 	session.Set("user_email", user.Email)
 	session.Set("user_name", user.Name)
 
 	if err := session.Save(); err != nil {
-		c.Redirect(http.StatusTemporaryRedirect, "/")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save session"})
 		return
 	}
 
-	c.Redirect(http.StatusTemporaryRedirect, "/profile")
+	// Add debug logging
+	c.Header("X-Debug-Session", "Session saved")
+	
+	// Redirect to the frontend callback route
+	c.Redirect(http.StatusTemporaryRedirect, "/callback")
 }
 
 func (h *AuthHandler) HandleLogout(c *gin.Context) {
 	session := sessions.Default(c)
+	
 	session.Clear()
+	
+	session.Options(sessions.Options{
+		Path:     "/",
+		MaxAge:   -1,
+		Secure:   false,
+		HttpOnly: true,
+	})
+	
 	session.Save()
-	c.Redirect(http.StatusTemporaryRedirect, "/")
+	
+	c.SetCookie("mysession", "", -1, "/", "", false, true)
+	
+	c.JSON(http.StatusOK, gin.H{"message": "Logged out successfully"})
 }
 
 func (h *AuthHandler) HandleGetProfile(c *gin.Context) {
+	c.Header("Content-Type", "application/json")
+
 	session := sessions.Default(c)
 	userID := session.Get("user_id")
+	
+	// Add debug logging
 	if userID == nil {
-		c.Redirect(http.StatusTemporaryRedirect, "/")
+		c.Header("X-Debug-Auth", "No user ID in session")
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+			"error": "unauthorized",
+		})
 		return
 	}
 
 	user, err := h.authService.GetUserByID(userID.(uint))
 	if err != nil {
-		c.Redirect(http.StatusTemporaryRedirect, "/")
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+			"error": "user not found",
+		})
 		return
 	}
 
