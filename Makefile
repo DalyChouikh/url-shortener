@@ -7,7 +7,7 @@ migrate-production:
 	@goose -dir assets/migrations postgres "user=[username] password=[password] host=[host] sslmode=require dbname=[dbname]" up
 
 frontend:
-	@cd frontend && npm run build
+	@cd frontend && npm i && npm run build
 
 build: frontend
 	@go build -o bin/gdgc-issatso main.go
