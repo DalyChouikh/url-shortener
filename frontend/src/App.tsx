@@ -55,7 +55,10 @@ function AppRoutes() {
           }
         />
         <Route path="/error" element={<Error />} />
-        <Route path="*" element={<Navigate to="/error?error=not_found" replace />} />
+        <Route
+          path="*"
+          element={<Navigate to="/error?error=not_found" replace />}
+        />
       </Routes>
     </div>
   );
@@ -69,7 +72,7 @@ function App() {
           <AppRoutes />
         </AuthProvider>
       </Router>
-      <ToastContainer />
+      <ToastContainer limit={3} />
     </>
   );
 }
