@@ -11,6 +11,8 @@ import ShortLinkGenerator from "./components/ShortLinkGenerator";
 import Profile from "./components/Profile";
 import AuthCallback from "./components/AuthCallback";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
+import { ToastContainer } from "react-toastify";
+import Error from "./components/Error";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -38,7 +40,7 @@ function AppRoutes() {
           path="/shorten"
           element={
             <ProtectedRoute>
-              <div className="container mx-auto px-4 py-8">
+              <div className="container flex justify-center items-center mx-auto px-4 py-8">
                 <ShortLinkGenerator />
               </div>
             </ProtectedRoute>
@@ -52,7 +54,8 @@ function AppRoutes() {
             </ProtectedRoute>
           }
         />
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="/error" element={<Error />} />
+        <Route path="*" element={<Navigate to="/error?error=not_found" replace />} />
       </Routes>
     </div>
   );
@@ -60,11 +63,14 @@ function AppRoutes() {
 
 function App() {
   return (
-    <Router>
-      <AuthProvider>
-        <AppRoutes />
-      </AuthProvider>
-    </Router>
+    <>
+      <Router>
+        <AuthProvider>
+          <AppRoutes />
+        </AuthProvider>
+      </Router>
+      <ToastContainer />
+    </>
   );
 }
 
