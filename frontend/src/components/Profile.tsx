@@ -1,6 +1,7 @@
 import { useAuth } from "../contexts/AuthContext";
 import { useState, useEffect } from "react";
 import { FaCopy } from "react-icons/fa";
+import { Bounce, toast } from "react-toastify";
 
 interface URL {
   ID: number;
@@ -20,7 +21,17 @@ export default function Profile() {
   const copyToClipboard = async (text: string) => {
     try {
       await navigator.clipboard.writeText(text);
-      alert("URL copied to clipboard!");
+      toast.success("Link copied to clipboard", {
+        position: "bottom-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: false,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+        transition: Bounce,
+      });
     } catch (err) {
       console.error("Failed to copy:", err);
     }
