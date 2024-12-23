@@ -13,6 +13,10 @@ export default function Navbar() {
     navigate("/");
   };
 
+  const handleLogin = () => {
+    window.location.href = "/auth/login";
+  };
+
   return (
     <nav className="flex items-center justify-between p-4 border-b-2 border-gray-200">
       <div className="flex items-center">
@@ -54,13 +58,13 @@ export default function Navbar() {
             </button>
           </>
         ) : (
-          <a
-            href="http://localhost:8080/auth/login"
+          <button
+            onClick={handleLogin}
             className="bg-blue-600 flex justify-center items-center text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
           >
             <FaGoogle className="mr-2" />
             Login
-          </a>
+          </button>
         )}
       </div>
     </nav>
