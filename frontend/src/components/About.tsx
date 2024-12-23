@@ -1,4 +1,9 @@
+import { useLocation } from 'react-router-dom';
+
 export default function About() {
+  const location = useLocation();
+  const redirectedFrom = location.state?.from;
+
   const features = [
     {
       title: "URL Shortener",
@@ -29,6 +34,11 @@ export default function About() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
+      {redirectedFrom && (
+        <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4">
+          You were redirected from {redirectedFrom} because you need to be logged in to access that page.
+        </div>
+      )}
       <section className="text-center mb-12">
         <h1 className="text-4xl font-bold mb-4">Welcome to GDG on Campus ISSATSo</h1>
         <p className="text-lg text-gray-600">
