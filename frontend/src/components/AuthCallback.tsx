@@ -1,24 +1,31 @@
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 
 export default function AuthCallback() {
   const navigate = useNavigate();
   const { refreshUser } = useAuth();
+  const [searchParams] = useSearchParams();
 
   useEffect(() => {
     const handleCallback = async () => {
+      const error = searchParams.get("error");
+
+      if (error) {
+        navigate("/?error=" + error);
+        return;
+      }
+
       try {
         await refreshUser();
         navigate("/profile");
       } catch (error) {
-        console.error("Authentication failed:", error);
-        navigate("/");
+        navigate("/?error=authentication_failed");
       }
     };
 
     handleCallback();
-  }, [navigate, refreshUser]);
+  }, [navigate, refreshUser, searchParams]);
 
   return <div>Authenticating...</div>;
 }
