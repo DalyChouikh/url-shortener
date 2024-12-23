@@ -30,6 +30,12 @@ func NewSPAHandler(embedFS fs.FS) (*SPAHandler, error) {
 }
 
 func (h *SPAHandler) ServeFiles(c *gin.Context) {
+	if strings.HasPrefix(c.Request.URL.Path, "/api/") ||
+	   strings.HasPrefix(c.Request.URL.Path, "/auth/") {
+		c.Next()
+		return
+	}
+
 	urlPath := strings.TrimPrefix(c.Request.URL.Path, "/")
 	
 	// If path is empty or doesn't have an extension, serve index.html
