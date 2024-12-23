@@ -15,6 +15,7 @@ type Config struct {
 	Server      ServerConfig
 	OAuth       OAuthConfig
 	Session     SessionConfig
+	UseHTTPS    bool
 }
 
 type DatabaseConfig struct {
@@ -36,13 +37,16 @@ type SessionConfig struct {
 
 func NewConfig(env, dbConnString string) *Config {
 	baseURL := "https://gdgc-issatso.tech"
+	useHTTPS := true
 	if env == "development" {
 		baseURL = "http://localhost:8080"
+		useHTTPS = false
 	}
 
 	return &Config{
 		Environment: env,
 		BaseURL:     baseURL,
+		UseHTTPS:    useHTTPS,
 		DBConfig: DatabaseConfig{
 			ConnectionString: dbConnString,
 		},

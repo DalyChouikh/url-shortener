@@ -71,7 +71,31 @@ func SetupRoutes(urlHandler handlers.URLHandler, authHandler handlers.AuthHandle
 	router := gin.Default()
 
 	store := cookie.NewStore([]byte(cfg.Session.Secret))
+	store.Options(sessions.Options{
+		Path:     "/",
+		MaxAge:   3600,
+		HttpOnly: true,
+		Secure:   cfg.UseHTTPS,
+		SameSite: http.SameSiteLaxMode,
+	})
+
 	router.Use(sessions.Sessions("mysession", store))
+
+	router.Use(func(c *gin.Context) {
+		if strings.HasPrefix(c.Request.URL.Path, "/auth/") {
+			c.Header("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
+			c.Header("Pragma", "no-cache")
+			c.Header("Expires", "0")
+		}
+		c.Next()
+	})
+
+	router.Use(func(c *gin.Context) {
+		c.Header("X-Content-Type-Options", "nosniff")
+		c.Header("X-Frame-Options", "DENY")
+		c.Header("X-XSS-Protection", "1; mode=block")
+		c.Next()
+	})
 
 	subFS, err := fs.Sub(frontend.FS(), "dist")
 	if err != nil {
@@ -86,6 +110,7 @@ func SetupRoutes(urlHandler handlers.URLHandler, authHandler handlers.AuthHandle
 	// API routes
 	api := router.Group("/api/v1")
 	api.Use(middleware.AuthRequired())
+	api.Use(middleware.AjaxRequired())
 	api.Use(rateLimitMiddleware())
 	{
 		api.POST("/shorten", urlHandler.HandleShortenURL)
@@ -96,9 +121,15 @@ func SetupRoutes(urlHandler handlers.URLHandler, authHandler handlers.AuthHandle
 	auth := router.Group("/auth")
 	{
 		auth.GET("/login", authHandler.HandleLogin)
-		auth.GET("/callback", authHandler.HandleCallback)
-		auth.POST("/logout", authHandler.HandleLogout)
-		auth.GET("/profile", middleware.AuthRequired(), authHandler.HandleGetProfile)
+		auth.GET("/callback", func(c *gin.Context) {
+			c.Header("Cache-Control", "no-cache, no-store, must-revalidate")
+			authHandler.HandleCallback(c)
+		})
+		auth.POST("/logout", middleware.AjaxRequired(), authHandler.HandleLogout)                         
+		auth.GET("/profile", middleware.AuthRequired(), middleware.AjaxRequired(), func(c *gin.Context) {
+			c.Header("Cache-Control", "no-cache, no-store, must-revalidate")
+			authHandler.HandleGetProfile(c)
+		})
 	}
 
 	// Redirect route
