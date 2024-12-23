@@ -25,15 +25,21 @@ func (h *AuthHandler) HandleLogin(c *gin.Context) {
 }
 
 func (h *AuthHandler) HandleCallback(c *gin.Context) {
+	// Check for error parameter first
+	if errorMsg := c.Query("error"); errorMsg != "" {
+		c.Redirect(http.StatusTemporaryRedirect, "/error?error=authentication_failed")
+		return
+	}
+
 	code := c.Query("code")
 	if code == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "No code provided"})
+		c.Redirect(http.StatusTemporaryRedirect, "/error?error=authentication_failed")
 		return
 	}
 
 	user, err := h.authService.HandleCallback(code)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Authentication failed"})
+		c.Redirect(http.StatusTemporaryRedirect, "/error?error=authentication_failed")
 		return
 	}
 
@@ -50,27 +56,27 @@ func (h *AuthHandler) HandleCallback(c *gin.Context) {
 
 	// Add debug logging
 	c.Header("X-Debug-Session", "Session saved")
-	
+
 	// Redirect to the frontend callback route
 	c.Redirect(http.StatusTemporaryRedirect, "/callback")
 }
 
 func (h *AuthHandler) HandleLogout(c *gin.Context) {
 	session := sessions.Default(c)
-	
+
 	session.Clear()
-	
+
 	session.Options(sessions.Options{
 		Path:     "/",
 		MaxAge:   -1,
 		Secure:   false,
 		HttpOnly: true,
 	})
-	
+
 	session.Save()
-	
+
 	c.SetCookie("mysession", "", -1, "/", "", false, true)
-	
+
 	c.JSON(http.StatusOK, gin.H{"message": "Logged out successfully"})
 }
 
@@ -79,7 +85,7 @@ func (h *AuthHandler) HandleGetProfile(c *gin.Context) {
 
 	session := sessions.Default(c)
 	userID := session.Get("user_id")
-	
+
 	// Add debug logging
 	if userID == nil {
 		c.Header("X-Debug-Auth", "No user ID in session")
