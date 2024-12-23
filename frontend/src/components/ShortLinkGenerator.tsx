@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Bounce, toast } from "react-toastify";
 
 export default function ShortLinkGenerator() {
   const [longUrl, setLongUrl] = useState("");
@@ -41,7 +42,17 @@ export default function ShortLinkGenerator() {
     navigator.clipboard
       .writeText(shortUrl)
       .then(() => {
-        alert("Copied to clipboard!");
+        toast.success("Link copied to clipboard", {
+          position: "bottom-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: false,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "light",
+          transition: Bounce,
+        });
       })
       .catch((err) => {
         console.error("Failed to copy: ", err);
