@@ -1,7 +1,7 @@
 import { useAuth } from "../contexts/AuthContext";
 import { useState, useEffect } from "react";
 import { FaCopy } from "react-icons/fa";
-import { Bounce, toast } from "react-toastify";
+import { showToast } from "../utils/toast";
 
 interface URL {
   ID: number;
@@ -21,17 +21,7 @@ export default function Profile() {
   const copyToClipboard = async (text: string) => {
     try {
       await navigator.clipboard.writeText(text);
-      toast.success("Link copied to clipboard", {
-        position: "bottom-right",
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: false,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "light",
-        transition: Bounce,
-      });
+      showToast("Link copied successfully", "success");
     } catch (err) {
       console.error("Failed to copy:", err);
     }
@@ -63,33 +53,12 @@ export default function Profile() {
 
       if (response.ok) {
         setUrls(urls.filter((url) => url.ID !== urlId));
-        toast.success("URL deleted successfully", {
-          position: "bottom-right",
-          autoClose: 5000,
-          hideProgressBar: false,
-          closeOnClick: false,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "light",
-          transition: Bounce,
-        });
+        showToast("URL deleted successfully", "success");
       } else {
         throw new Error("Failed to delete URL");
       }
     } catch (error) {
-      console.error("Error deleting URL:", error);
-      toast.error("Failed to delete URL", {
-        position: "bottom-right",
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: false,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "light",
-        transition: Bounce,
-      });
+      showToast("Failed to delete URL", "error");
     }
   };
 
@@ -208,7 +177,7 @@ export default function Profile() {
                         <button
                           onClick={() =>
                             copyToClipboard(
-                              `${window.location.origin}/r/${url.ShortCode}`
+                              `${window.location.origin}/r/${url.ShortCode}`,
                             )
                           }
                           className="text-gray-500 hover:text-gray-700"
