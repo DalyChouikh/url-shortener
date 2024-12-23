@@ -1,5 +1,6 @@
 import { useAuth } from "../contexts/AuthContext";
 import { useState, useEffect } from "react";
+import { FaCopy } from "react-icons/fa";
 
 interface URL {
   ID: number;
@@ -14,6 +15,25 @@ export default function Profile() {
   const { user } = useAuth();
   const [urls, setUrls] = useState<URL[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedQR, setSelectedQR] = useState<string | null>(null);
+
+  const copyToClipboard = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      alert("URL copied to clipboard!");
+    } catch (err) {
+      console.error("Failed to copy:", err);
+    }
+  };
+
+  const downloadQRCode = (qrCode: string, shortCode: string) => {
+    const link = document.createElement("a");
+    link.href = `data:image/png;base64,${qrCode}`;
+    link.download = `qr-${shortCode}.png`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   useEffect(() => {
     const fetchUrls = async () => {
@@ -111,25 +131,42 @@ export default function Profile() {
                       </div>
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-500">
-                      <a
-                        href={`/r/${url.ShortCode}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-600 hover:text-blue-800"
-                      >
-                        {`${window.location.origin}/r/${url.ShortCode}`}
-                      </a>
+                      <div className="flex items-center space-x-2">
+                        <a
+                          href={`/r/${url.ShortCode}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 hover:text-blue-800"
+                        >
+                          {`${window.location.origin}/r/${url.ShortCode}`}
+                        </a>
+                        <button
+                          onClick={() => copyToClipboard(`${window.location.origin}/r/${url.ShortCode}`)}
+                          className="text-gray-500 hover:text-gray-700"
+                        >
+                          <FaCopy />
+                        </button>
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {url.Clicks}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {url.QRCode && (
-                        <img
-                          src={`data:image/png;base64,${url.QRCode}`}
-                          alt="QR Code"
-                          className="w-20 h-20"
-                        />
+                        <div className="flex flex-col items-center space-y-2">
+                          <img
+                            src={`data:image/png;base64,${url.QRCode}`}
+                            alt="QR Code"
+                            className="w-20 h-20 cursor-pointer"
+                            onClick={() => setSelectedQR(url.QRCode)}
+                          />
+                          <button
+                            onClick={() => downloadQRCode(url.QRCode, url.ShortCode)}
+                            className="text-sm text-blue-600 hover:text-blue-800"
+                          >
+                            Download
+                          </button>
+                        </div>
                       )}
                     </td>
                   </tr>
@@ -139,6 +176,19 @@ export default function Profile() {
           </div>
         )}
       </div>
+
+      {/* QR Code Modal */}
+      {selectedQR && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4" onClick={() => setSelectedQR(null)}>
+          <div className="bg-white p-4 rounded-lg" onClick={e => e.stopPropagation()}>
+            <img
+              src={`data:image/png;base64,${selectedQR}`}
+              alt="QR Code Large"
+              className="w-64 h-64"
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
