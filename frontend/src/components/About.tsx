@@ -1,5 +1,5 @@
 import { useLocation } from "react-router-dom";
-import { Bounce, toast } from "react-toastify";
+import { showToast } from "../utils/toast";
 
 export default function About() {
   const location = useLocation();
@@ -37,17 +37,7 @@ export default function About() {
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
       {redirectedFrom &&
-        toast.warning(`You need to login to access your profile.`, {
-          position: "bottom-right",
-          autoClose: 5000,
-          hideProgressBar: false,
-          closeOnClick: false,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "light",
-          transition: Bounce,
-        })}
+        showToast("You must be logged in to access profile.", "warning")}
       <section className="text-center mb-12">
         <h1 className="text-4xl font-bold mb-4">
           Welcome to GDG on Campus ISSATSo
