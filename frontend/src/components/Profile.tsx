@@ -46,6 +46,53 @@ export default function Profile() {
     document.body.removeChild(link);
   };
 
+  const handleDelete = async (urlId: number) => {
+    if (!confirm("Are you sure you want to delete this URL?")) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/v1/urls/${urlId}`, {
+        method: "DELETE",
+        credentials: "include",
+        headers: {
+          Accept: "application/json",
+          "X-Requested-With": "XMLHttpRequest",
+        },
+      });
+
+      if (response.ok) {
+        setUrls(urls.filter((url) => url.ID !== urlId));
+        toast.success("URL deleted successfully", {
+          position: "bottom-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: false,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "light",
+          transition: Bounce,
+        });
+      } else {
+        throw new Error("Failed to delete URL");
+      }
+    } catch (error) {
+      console.error("Error deleting URL:", error);
+      toast.error("Failed to delete URL", {
+        position: "bottom-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: false,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+        transition: Bounce,
+      });
+    }
+  };
+
   useEffect(() => {
     const fetchUrls = async () => {
       try {
@@ -125,6 +172,9 @@ export default function Profile() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     QR Code
                   </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
@@ -158,7 +208,7 @@ export default function Profile() {
                         <button
                           onClick={() =>
                             copyToClipboard(
-                              `${window.location.origin}/r/${url.ShortCode}`,
+                              `${window.location.origin}/r/${url.ShortCode}`
                             )
                           }
                           className="text-gray-500 hover:text-gray-700"
@@ -189,6 +239,14 @@ export default function Profile() {
                           </button>
                         </div>
                       )}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <button
+                        onClick={() => handleDelete(url.ID)}
+                        className="text-red-600 hover:text-red-800 font-medium"
+                      >
+                        Delete
+                      </button>
                     </td>
                   </tr>
                 ))}
