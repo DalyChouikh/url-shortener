@@ -115,6 +115,7 @@ func SetupRoutes(urlHandler handlers.URLHandler, authHandler handlers.AuthHandle
 	{
 		api.POST("/shorten", urlHandler.HandleShortenURL)
 		api.GET("/urls", urlHandler.HandleGetUserURLs)
+		api.DELETE("/urls/:id", urlHandler.HandleDeleteURL)
 	}
 
 	// Auth routes

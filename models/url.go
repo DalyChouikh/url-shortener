@@ -45,3 +45,7 @@ func (r *URLRepository) GetUserURLs(userID uint) ([]URL, error) {
 	err := r.db.Where("user_id = ?", userID).Find(&urls).Error
 	return urls, err
 }
+
+func (r *URLRepository) DeleteURL(urlID int, userID uint) error {
+	return r.db.Where("id = ? AND user_id = ?", urlID, userID).Delete(&URL{}).Error
+}

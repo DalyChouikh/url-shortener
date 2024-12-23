@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/DalyChouikh/url-shortener/services"
@@ -82,4 +83,21 @@ func (h *URLHandler) HandleGetUserURLs(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"urls": urls})
+}
+
+func (h *URLHandler) HandleDeleteURL(c *gin.Context) {
+	session := sessions.Default(c)
+	userID := session.Get("user_id").(uint)
+
+	urlID, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid URL ID"})
+		return
+	}
+	if err := h.urlService.DeleteURL(urlID, userID); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete URL"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "URL deleted successfully"})
 }

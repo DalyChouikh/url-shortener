@@ -74,6 +74,10 @@ func (s *URLService) BaseURL() string {
 	return s.baseURL
 }
 
+func (s *URLService) DeleteURL(urlID int, userID uint) error {
+	return s.repo.DeleteURL(urlID, userID)
+}
+
 func (s *URLService) isValidURL(longURL string) (bool, error) {
 	parsedURL, err := url.ParseRequestURI(longURL)
 	if err != nil {
