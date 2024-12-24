@@ -37,7 +37,7 @@ func (h *URLHandler) HandleShortenURL(c *gin.Context) {
 		return
 	}
 
-	cleanURL := strings.TrimPrefix(strings.TrimPrefix(req.LongURL, "https://"), "http://")
+	cleanURL := strings.ToLower(strings.TrimPrefix(strings.TrimPrefix(req.LongURL, "https://"), "http://"))
 	if strings.Contains(cleanURL, "localhost:8080/r/") || strings.Contains(cleanURL, "gdgc-issatso.tech/r/") {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "URL already shortened"})
 		return
