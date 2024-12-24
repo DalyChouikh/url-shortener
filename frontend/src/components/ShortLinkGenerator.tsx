@@ -3,19 +3,37 @@ import { showToast } from "@/utils/toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Copy, Download } from "lucide-react";
+import { Copy, Download, Loader2 } from "lucide-react";
+
+const isValidUrl = (url: string): boolean => {
+  try {
+    new URL(url);
+    return true;
+  } catch {
+    return false;
+  }
+};
 
 export default function ShortLinkGenerator() {
   const [longUrl, setLongUrl] = useState("");
   const [shortUrl, setShortUrl] = useState("");
   const [qrCode, setQrCode] = useState("");
-  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const generateShortLink = async () => {
-    // Reset previous states
+    if (!longUrl) {
+      showToast("Please enter a URL", "error");
+      return;
+    }
+
+    if (!isValidUrl(longUrl)) {
+      showToast("Please enter a valid URL", "error");
+      return;
+    }
+
+    setIsLoading(true);
     setShortUrl("");
     setQrCode("");
-    setError("");
 
     try {
       const response = await fetch("/api/v1/shorten", {
@@ -34,34 +52,43 @@ export default function ShortLinkGenerator() {
       if (response.ok) {
         setShortUrl(data.short_url);
         setQrCode(data.qrcode);
+        showToast("Short link generated successfully!", "success");
       } else {
-        setError(data.error || "An error occurred");
+        showToast("Failed to generate short link", "error");
       }
     } catch (err) {
-      setError("Network error. Please try again.");
+      showToast("Failed to generate short link", "error");
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const copyLink = () => {
-    navigator.clipboard
-      .writeText(shortUrl)
-      .then(() => {
-        showToast("Link copied successfully", "success");
-      })
-      .catch((err) => {
-        console.error("Failed to copy: ", err);
-      });
+  const copyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(shortUrl);
+      showToast("Link copied to clipboard!", "success");
+    } catch (err) {
+      showToast("Failed to copy link", "error");
+    }
   };
 
   const downloadQRCode = () => {
-    if (!qrCode) return;
+    if (!qrCode) {
+      showToast("No QR code available", "error");
+      return;
+    }
 
-    const link = document.createElement("a");
-    link.href = `data:image/png;base64,${qrCode}`;
-    link.download = "qr_code.png";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    try {
+      const link = document.createElement("a");
+      link.href = `data:image/png;base64,${qrCode}`;
+      link.download = `qr-${shortUrl.split("/r/")[1]}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      showToast("QR code downloaded successfully!", "success");
+    } catch (err) {
+      showToast("Failed to download QR code", "error");
+    }
   };
 
   return (
@@ -79,18 +106,24 @@ export default function ShortLinkGenerator() {
             value={longUrl}
             onChange={(e) => setLongUrl(e.target.value)}
             placeholder="Enter your long URL"
+            disabled={isLoading}
           />
         </div>
 
-        <Button className="w-full" onClick={generateShortLink}>
-          Generate
+        <Button
+          className="w-full"
+          onClick={generateShortLink}
+          disabled={isLoading}
+        >
+          {isLoading ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Generating...
+            </>
+          ) : (
+            "Generate"
+          )}
         </Button>
-
-        {error && (
-          <p className="text-destructive text-center" id="errorMessage">
-            {error}
-          </p>
-        )}
 
         {shortUrl && (
           <div className="mt-4">
@@ -103,7 +136,12 @@ export default function ShortLinkGenerator() {
               >
                 {shortUrl}
               </a>
-              <Button variant="ghost" size="sm" onClick={copyLink}>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={copyLink}
+                disabled={isLoading}
+              >
                 <Copy className="h-4 w-4" />
               </Button>
             </div>
@@ -121,6 +159,7 @@ export default function ShortLinkGenerator() {
               variant="outline"
               onClick={downloadQRCode}
               className="w-full"
+              disabled={isLoading}
             >
               <Download className="mr-2 h-4 w-4" />
               Download QR Code
