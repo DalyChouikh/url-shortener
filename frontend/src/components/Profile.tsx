@@ -1,7 +1,7 @@
-import { useAuth } from "../contexts/AuthContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { useState, useEffect } from "react";
 import { FaCopy } from "react-icons/fa";
-import { showToast } from "../utils/toast";
+import { showToast } from "@/utils/toast";
 
 interface URL {
   ID: number;

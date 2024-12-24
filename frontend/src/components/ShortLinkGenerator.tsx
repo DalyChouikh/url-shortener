@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { showToast } from "../utils/toast";
+import { showToast } from "@/utils/toast";
 
 export default function ShortLinkGenerator() {
   const [longUrl, setLongUrl] = useState("");
