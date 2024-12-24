@@ -48,7 +48,7 @@ export default {
         sm: "calc(var(--radius) - 4px)",
       },
       fontFamily: {
-        sans: ["Google Sans", "sans-serif"],
+        sans: ["Inter", "sans-serif"],
       },
     },
   },
