@@ -63,7 +63,8 @@ func (h *URLHandler) HandleRedirect(c *gin.Context) {
 		return
 	}
 
-	c.Redirect(http.StatusMovedPermanently, longURL)
+	c.Header("Cache-Control", "no-store, no-cache, must-revalidate")
+	c.Redirect(http.StatusTemporaryRedirect, longURL)
 }
 
 func (h *URLHandler) HandleGetPing(ctx *gin.Context) {
@@ -100,4 +101,53 @@ func (h *URLHandler) HandleDeleteURL(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "URL deleted successfully"})
+}
+
+func (h *URLHandler) HandleUpdateURL(c *gin.Context) {
+	session := sessions.Default(c)
+	userID := session.Get("user_id").(uint)
+
+	urlID, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid URL ID"})
+		return
+	}
+
+	if _, err := h.urlService.GetURLById(urlID, userID); err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "URL not found"})
+		return
+	}
+
+	var req ShortenRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid Request format"})
+		return
+	}
+
+	if err := h.urlService.UpdateURL(urlID, userID, req.LongURL); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update URL"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "URL updated successfully"})
+}
+
+func (h *URLHandler) HandleGetURLById(c *gin.Context) {
+	session := sessions.Default(c)
+	userID := session.Get("user_id").(uint)
+	urlIdString := c.Param("id")
+
+	urlId, err := strconv.Atoi(urlIdString)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid URL ID"})
+		return
+	}
+
+	url, err := h.urlService.GetURLById(urlId, userID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "URL not found"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"url": url})
 }

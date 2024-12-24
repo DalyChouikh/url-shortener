@@ -70,12 +70,24 @@ func (s *URLService) GetUserURLs(userID uint) ([]models.URL, error) {
 	return s.repo.GetUserURLs(userID)
 }
 
-func (s *URLService) BaseURL() string {
-	return s.baseURL
+func (s *URLService) UpdateURL(urlID int, userId uint, newURL string) error {
+	if valid, err := s.isValidURL(newURL); !valid {
+		return fmt.Errorf("Invalid URL: %w", err)
+	}
+
+	return s.repo.UpdateURL(urlID, userId, newURL)
 }
 
 func (s *URLService) DeleteURL(urlID int, userID uint) error {
 	return s.repo.DeleteURL(urlID, userID)
+}
+
+func (s *URLService) GetURLById(urlId int, userId uint) (*models.URL, error) {
+	return s.repo.GetByID(urlId, userId)
+}
+
+func (s *URLService) BaseURL() string {
+	return s.baseURL
 }
 
 func (s *URLService) isValidURL(longURL string) (bool, error) {
