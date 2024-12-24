@@ -1,5 +1,9 @@
 import { useState } from "react";
 import { showToast } from "@/utils/toast";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Copy, Download } from "lucide-react";
 
 export default function ShortLinkGenerator() {
   const [longUrl, setLongUrl] = useState("");
@@ -61,74 +65,69 @@ export default function ShortLinkGenerator() {
   };
 
   return (
-    <div className="w-full max-w-md bg-white p-6 rounded-lg border-2 border-gray-200">
-      <h2 className="text-2xl font-bold text-center mb-4">
-        Generate Short Link
-      </h2>
-      <p className="text-center text-gray-600 mb-4 font-semibold">
-        Enter a long URL to make a shorter one
-      </p>
-
-      <div className="mb-4">
-        <input
-          type="url"
-          id="urlInput"
-          value={longUrl}
-          onChange={(e) => setLongUrl(e.target.value)}
-          placeholder="Enter your long URL"
-          className="w-full p-2 border-2 border-gray-200 rounded"
-        />
-      </div>
-
-      <button
-        onClick={generateShortLink}
-        className="w-full bg-blue-600 text-white py-2 font-medium rounded hover:bg-blue-700 transition-colors"
-      >
-        Generate
-      </button>
-
-      {error && (
-        <p className="text-red-500 mt-4 text-center" id="errorMessage">
-          {error}
+    <Card className="w-full max-w-md">
+      <CardHeader>
+        <CardTitle className="text-center">Generate Short Link</CardTitle>
+        <p className="text-center text-muted-foreground">
+          Enter a long URL to make a shorter one
         </p>
-      )}
-
-      {shortUrl && (
-        <div className="mt-4">
-          <div className="flex items-center justify-between bg-gray-100 p-3 rounded">
-            <a
-              href={shortUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-blue-600 font-semibold truncate"
-            >
-              {shortUrl}
-            </a>
-            <button
-              onClick={copyLink}
-              className="ml-2 text-gray-600 hover:text-blue-600"
-            >
-              📋
-            </button>
-          </div>
-        </div>
-      )}
-
-      {qrCode && (
-        <div className="mt-4 text-center">
-          <img
-            src={`data:image/png;base64,${qrCode}`}
-            alt="QR Code"
-            className="mx-auto mb-4 w-40 h-40"
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="space-y-2">
+          <Input
+            type="url"
+            value={longUrl}
+            onChange={(e) => setLongUrl(e.target.value)}
+            placeholder="Enter your long URL"
           />
-          <button
-            onClick={downloadQRCode}
-            className="bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700 transition-colors"
-          >
-            Download QR Code as PNG
-          </button>
         </div>
-      )}
-    </div>
+
+        <Button className="w-full" onClick={generateShortLink}>
+          Generate
+        </Button>
+
+        {error && (
+          <p className="text-destructive text-center" id="errorMessage">
+            {error}
+          </p>
+        )}
+
+        {shortUrl && (
+          <div className="mt-4">
+            <div className="flex items-center justify-between rounded-md border p-2">
+              <a
+                href={shortUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary hover:underline truncate"
+              >
+                {shortUrl}
+              </a>
+              <Button variant="ghost" size="sm" onClick={copyLink}>
+                <Copy className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {qrCode && (
+          <div className="mt-4 text-center space-y-4">
+            <img
+              src={`data:image/png;base64,${qrCode}`}
+              alt="QR Code"
+              className="mx-auto w-40 h-40"
+            />
+            <Button
+              variant="outline"
+              onClick={downloadQRCode}
+              className="w-full"
+            >
+              <Download className="mr-2 h-4 w-4" />
+              Download QR Code
+            </Button>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }
