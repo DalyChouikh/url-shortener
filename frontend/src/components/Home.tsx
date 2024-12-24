@@ -11,7 +11,7 @@ import {
 import { FaGoogle } from "react-icons/fa";
 import { useAuth } from "@/contexts/AuthContext";
 
-export default function About() {
+export default function Home() {
   const location = useLocation();
   const { user } = useAuth();
   const redirectedFrom = location.state?.from;
