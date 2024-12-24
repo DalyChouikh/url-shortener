@@ -1,5 +1,5 @@
+import { showToast } from "@/utils/toast";
 import { useLocation } from "react-router-dom";
-import { showToast } from "../utils/toast";
 
 export default function About() {
   const location = useLocation();
