@@ -1,5 +1,6 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
@@ -13,7 +14,9 @@ import {
 import { showToast } from "@/utils/toast";
 
 export default function Settings() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [defaultUrlExpiry, setDefaultUrlExpiry] = useState("never");
   const [urlAnalytics, setUrlAnalytics] = useState(true);
@@ -21,6 +24,16 @@ export default function Settings() {
   const handleSaveSettings = async () => {
     // TODO: Implement settings save functionality
     showToast("Settings saved successfully", "success");
+  };
+
+  const handleDisconnect = async () => {
+    await logout();
+  };
+
+  const handleCancel = () => {
+    // Get the previous path from location state, or default to home
+    const from = location.state?.from || "/";
+    navigate(from);
   };
 
   return (
@@ -91,7 +104,11 @@ export default function Settings() {
               <p className="font-medium">Connected Account</p>
               <p className="text-sm text-muted-foreground">{user?.email}</p>
             </div>
-            <Button variant="outline" className="text-destructive">
+            <Button 
+              variant="outline" 
+              className="text-destructive"
+              onClick={handleDisconnect}
+            >
               Disconnect
             </Button>
           </div>
@@ -108,7 +125,9 @@ export default function Settings() {
       </div>
 
       <div className="flex justify-end gap-4">
-        <Button variant="outline">Cancel</Button>
+        <Button variant="outline" onClick={handleCancel}>
+          Cancel
+        </Button>
         <Button onClick={handleSaveSettings}>Save Changes</Button>
       </div>
     </div>
