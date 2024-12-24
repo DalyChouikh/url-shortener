@@ -32,8 +32,8 @@ export default function Navbar() {
         <div className="flex-1 flex items-center gap-6 md:gap-8">
           <Link to="/" className="flex items-center gap-4">
             <img src={logo} alt="GDG Logo" className="h-8 w-auto" />
-            <span className="hidden font-bold sm:inline-block">
-              GDGC ISSATSo
+            <span className="hidden font-semibold sm:inline-block">
+              Google Developer Groups - ISSATSo
             </span>
           </Link>
         </div>
