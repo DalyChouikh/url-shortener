@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/DalyChouikh/url-shortener/services"
@@ -33,6 +34,11 @@ func (h *URLHandler) HandleShortenURL(c *gin.Context) {
 	var req ShortenRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid Request format"})
+		return
+	}
+
+	if strings.Contains(req.LongURL, h.urlService.BaseURL()+"/r/") {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "URL already shortened"})
 		return
 	}
 
