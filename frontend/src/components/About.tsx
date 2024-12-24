@@ -37,7 +37,10 @@ export default function About() {
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
       {redirectedFrom &&
-        showToast("You must be logged in to access profile.", "warning")}
+        showToast(
+          `You must be logged in to access ${(redirectedFrom as string).replace("/", "")}.`,
+          "warning",
+        )}
       <section className="text-center mb-12">
         <h1 className="text-4xl font-bold mb-4">
           Welcome to GDG on Campus ISSATSo
