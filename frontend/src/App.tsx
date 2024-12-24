@@ -13,6 +13,7 @@ import AuthCallback from "@/components/AuthCallback";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { ToastContainer } from "react-toastify";
 import Error from "@/components/Error";
+import Settings from "@/components/Settings";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -51,6 +52,14 @@ function AppRoutes() {
           element={
             <ProtectedRoute>
               <Profile />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/settings"
+          element={
+            <ProtectedRoute>
+              <Settings />
             </ProtectedRoute>
           }
         />
