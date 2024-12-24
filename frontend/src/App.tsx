@@ -5,14 +5,14 @@ import {
   Navigate,
   useLocation,
 } from "react-router-dom";
-import Navbar from "./components/Navbar";
-import About from "./components/About";
-import ShortLinkGenerator from "./components/ShortLinkGenerator";
-import Profile from "./components/Profile";
-import AuthCallback from "./components/AuthCallback";
-import { AuthProvider, useAuth } from "./contexts/AuthContext";
+import Navbar from "@/components/Navbar";
+import About from "@/components/About";
+import ShortLinkGenerator from "@/components/ShortLinkGenerator";
+import Profile from "@/components/Profile";
+import AuthCallback from "@/components/AuthCallback";
+import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { ToastContainer } from "react-toastify";
-import Error from "./components/Error";
+import Error from "@/components/Error";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
