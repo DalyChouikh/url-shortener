@@ -26,6 +26,10 @@ export default function Navbar() {
     window.location.href = "/auth/login";
   };
 
+  const handleSettingsClick = () => {
+    navigate("/settings", { state: { from: location.pathname } });
+  };
+
   return (
     <nav className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center px-4 mx-auto">
@@ -70,7 +74,7 @@ export default function Navbar() {
                     Profile
                   </DropdownMenuItem>
                   <DropdownMenuItem
-                    onClick={() => navigate("/settings")}
+                    onClick={handleSettingsClick}
                     disabled={location.pathname === "/settings"}
                   >
                     <Settings className="mr-2 h-4 w-4" />
