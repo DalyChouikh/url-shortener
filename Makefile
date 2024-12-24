@@ -13,7 +13,7 @@ build: frontend
 	@go build -o bin/gdgc-issatso main.go
 
 start: build
-	@./bin/gdgclinky
+	@./bin/gdgc-issatso
 
 
 dev: frontend
