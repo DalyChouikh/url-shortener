@@ -131,6 +131,12 @@ func (h *URLHandler) HandleUpdateURL(c *gin.Context) {
 		return
 	}
 
+	cleanURL := strings.ToLower(strings.TrimPrefix(strings.TrimPrefix(req.LongURL, "https://"), "http://"))
+	if strings.Contains(cleanURL, "localhost:8080/r/") || strings.Contains(cleanURL, "gdgc-issatso.tech/r/") {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "URL already shortened"})
+		return
+	}
+
 	if err := h.urlService.UpdateURL(urlID, userID, req.LongURL); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update URL"})
 		return
