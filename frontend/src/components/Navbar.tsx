@@ -10,7 +10,15 @@ import {
 } from "@/components/ui/dropdown-menu";
 import logo from "../../public/gdg-logo.png";
 import { FaGoogle } from "react-icons/fa";
-import { LogOut, Link as LinkIcon, Settings, User } from "lucide-react";
+import {
+  LogOut,
+  Link as LinkIcon,
+  Info,
+  Settings,
+  User,
+  Menu,
+  Home,
+} from "lucide-react";
 
 export default function Navbar() {
   const { user, logout } = useAuth();
@@ -41,7 +49,7 @@ export default function Navbar() {
             </span>
           </Link>
 
-          {/* Add navigation buttons */}
+          {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-4">
             <Button
               variant="ghost"
@@ -72,8 +80,10 @@ export default function Navbar() {
                 onClick={() => navigate("/shorten")}
               >
                 <LinkIcon className="h-4 w-4" />
-                Shorten URL
+                <span className="inline">Shorten URL</span>
               </Button>
+
+              {/* User Dropdown */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="gap-2">
@@ -86,6 +96,25 @@ export default function Navbar() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
+                  {/* Mobile Navigation Items */}
+                  <div className="md:hidden">
+                    <DropdownMenuItem
+                      onClick={() => navigate("/")}
+                      disabled={location.pathname === "/"}
+                    >
+                      <Home className="mr-2 h-4 w-4" />
+                      Home
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => navigate("/about")}
+                      disabled={location.pathname === "/about"}
+                    >
+                      <Info className="mr-2 h-4 w-4" />
+                      About
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                  </div>
+
                   <DropdownMenuItem
                     onClick={() => navigate("/profile")}
                     disabled={location.pathname === "/profile"}
@@ -109,10 +138,41 @@ export default function Navbar() {
               </DropdownMenu>
             </>
           ) : (
-            <Button variant="default" className="gap-2" onClick={handleLogin}>
-              <FaGoogle className="h-4 w-4" />
-              Login with Google
-            </Button>
+            <>
+              {/* Mobile Menu for Non-logged Users */}
+              <div className="md:hidden">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon">
+                      <Menu className="h-5 w-5" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem
+                      onClick={() => navigate("/")}
+                      disabled={location.pathname === "/"}
+                    >
+                      <Home className="mr-2 h-4 w-4" />
+                      Home
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => navigate("/about")}
+                      disabled={location.pathname === "/about"}
+                    >
+                      <Info className="mr-2 h-4 w-4" />
+                      About
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+
+              {/* Login Button */}
+              <Button variant="default" className="gap-2" onClick={handleLogin}>
+                <FaGoogle className="h-4 w-4" />
+                <span className="hidden sm:inline">Login with Google</span>
+                <span className="sm:hidden">Login</span>
+              </Button>
+            </>
           )}
         </div>
       </div>
