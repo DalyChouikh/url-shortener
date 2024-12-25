@@ -47,7 +47,7 @@ export default function About() {
             <div className="aspect-video rounded-xl overflow-hidden shadow-xl">
               <iframe
                 className="w-full h-full"
-                src="https://www.youtube.com/embed/placeholder"
+                src="https://www.youtube.com/embed/lIdTw6GEXw0"
                 title="GDG ISSATSo Introduction"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
