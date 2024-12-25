@@ -139,6 +139,13 @@ export default function Navbar() {
             </>
           ) : (
             <>
+              {/* Login Button */}
+              <Button variant="default" className="gap-2" onClick={handleLogin}>
+                <FaGoogle className="h-4 w-4" />
+                <span className="hidden sm:inline">Login with Google</span>
+                <span className="sm:hidden">Login</span>
+              </Button>
+
               {/* Mobile Menu for Non-logged Users */}
               <div className="md:hidden">
                 <DropdownMenu>
@@ -165,13 +172,6 @@ export default function Navbar() {
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
-
-              {/* Login Button */}
-              <Button variant="default" className="gap-2" onClick={handleLogin}>
-                <FaGoogle className="h-4 w-4" />
-                <span className="hidden sm:inline">Login with Google</span>
-                <span className="sm:hidden">Login</span>
-              </Button>
             </>
           )}
         </div>
