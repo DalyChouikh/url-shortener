@@ -1,6 +1,14 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { useState, useEffect } from "react";
-import { Copy, Trash2, Edit2, ArrowUpDown } from "lucide-react";
+import {
+  Copy,
+  Trash2,
+  Edit2,
+  ArrowUpDown,
+  LinkIcon,
+  Download,
+  Loader2,
+} from "lucide-react";
 import { showToast } from "@/utils/toast";
 import { Button } from "@/components/ui/button";
 import {
@@ -29,6 +37,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 
 interface URL {
   ID: number;
@@ -179,53 +188,81 @@ export default function Profile() {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
-        <div className="p-6">
-          <div className="flex items-center gap-4">
+    <div className="container mx-auto p-6 space-y-8">
+      {/* User Profile Card */}
+      <Card className="overflow-hidden">
+        <div className="relative h-32 bg-gradient-to-r from-blue-600 to-indigo-600">
+          <div className="absolute -bottom-12 left-6">
             <img
-              src={user.picture}
-              alt={user.name}
-              className="h-20 w-20 rounded-full"
+              src={user?.picture}
+              alt={user?.name}
+              className="h-24 w-24 rounded-full border-4 border-background"
             />
-            <div>
-              <h2 className="text-2xl font-bold">{user.name}</h2>
-              <p className="text-muted-foreground">{user.email}</p>
-            </div>
           </div>
         </div>
-      </div>
+        <div className="p-6 pt-16">
+          <h2 className="text-2xl font-bold">{user?.name}</h2>
+          <p className="text-muted-foreground">{user?.email}</p>
+        </div>
+      </Card>
 
-      <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
-        <div className="p-6">
-          <h3 className="text-lg font-semibold mb-4">Your Shortened URLs</h3>
+      {/* URLs Management Section */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle>Your Shortened URLs</CardTitle>
+            <Button
+              variant="outline"
+              onClick={() => (window.location.href = "/shorten")}
+              className="gap-2"
+            >
+              <LinkIcon className="h-4 w-4" />
+              Create New
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
           {loading ? (
-            <p>Loading URLs...</p>
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
           ) : urls.length === 0 ? (
-            <p className="text-gray-600">No URLs generated yet.</p>
+            <div className="text-center py-8">
+              <div className="flex flex-col items-center gap-2">
+                <LinkIcon className="h-8 w-8 text-muted-foreground" />
+                <p className="text-muted-foreground">No URLs generated yet</p>
+                <Button
+                  variant="outline"
+                  onClick={() => (window.location.href = "/shorten")}
+                  className="mt-2"
+                >
+                  Create your first short URL
+                </Button>
+              </div>
+            </div>
           ) : (
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead
-                      className="w-[120px] cursor-pointer"
+                      className="w-[120px] cursor-pointer hover:text-primary transition-colors"
                       onClick={() => handleSort("CreatedAt")}
                     >
-                      <div className="flex items-center">
+                      <div className="flex items-center gap-1">
                         Created At
-                        <ArrowUpDown className="ml-1 h-4 w-4" />
+                        <ArrowUpDown className="h-4 w-4" />
                       </div>
                     </TableHead>
                     <TableHead className="w-[300px]">Original URL</TableHead>
                     <TableHead className="w-[300px]">Short URL</TableHead>
                     <TableHead
-                      className="w-[80px] text-center cursor-pointer"
+                      className="w-[80px] text-center cursor-pointer hover:text-primary transition-colors"
                       onClick={() => handleSort("Clicks")}
                     >
-                      <div className="flex items-center justify-center">
+                      <div className="flex items-center justify-center gap-1">
                         Clicks
-                        <ArrowUpDown className="ml-1 h-4 w-4" />
+                        <ArrowUpDown className="h-4 w-4" />
                       </div>
                     </TableHead>
                     <TableHead className="w-[150px] text-center">
@@ -239,83 +276,85 @@ export default function Profile() {
                 <TableBody>
                   {sortedUrls.map((url) => (
                     <TableRow key={url.ID}>
-                      <TableCell className="w-[120px]">
+                      <TableCell className="w-[120px] text-muted-foreground">
                         {new Date(url.CreatedAt).toLocaleDateString()}
                       </TableCell>
-                      <TableCell className="w-[300px]">
-                        <div className="max-w-[280px] truncate">
+                      <TableCell className="max-w-[300px]">
+                        <div className="truncate">
                           <a
                             href={url.LongURL}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-blue-600 hover:text-blue-800"
+                            className="text-primary hover:underline"
                           >
                             {url.LongURL}
                           </a>
                         </div>
                       </TableCell>
-                      <TableCell className="w-[300px]">
+                      <TableCell>
                         <div className="flex items-center gap-2">
-                          <span className="max-w-[240px] truncate">
-                            <a
-                              href={`/r/${url.ShortCode}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-primary hover:underline"
-                            >
-                              {`${window.location.origin}/r/${url.ShortCode}`}
-                            </a>
-                          </span>
+                          <a
+                            href={`/r/${url.ShortCode}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-primary hover:underline truncate"
+                          >
+                            {`${window.location.origin}/r/${url.ShortCode}`}
+                          </a>
                           <Button
                             variant="ghost"
-                            size="sm"
+                            size="icon"
                             onClick={() =>
                               copyToClipboard(
                                 `${window.location.origin}/r/${url.ShortCode}`
                               )
                             }
+                            className="shrink-0"
                           >
                             <Copy className="h-4 w-4" />
                           </Button>
                         </div>
                       </TableCell>
-                      <TableCell className="w-[80px] text-center">
+                      <TableCell className="text-center font-medium">
                         {url.Clicks}
                       </TableCell>
-                      <TableCell className="w-[150px]">
-                        <div className="flex flex-col items-center space-y-2">
+                      <TableCell>
+                        <div className="flex flex-col items-center gap-2">
                           {url.QRCode && (
                             <>
                               <img
                                 src={`data:image/png;base64,${url.QRCode}`}
                                 alt="QR Code"
-                                className="w-20 h-20 cursor-pointer"
+                                className="w-16 h-16 cursor-pointer hover:scale-105 transition-transform"
                                 onClick={() => setSelectedQR(url.QRCode)}
                               />
-                              <button
+                              <Button
+                                variant="ghost"
+                                size="sm"
                                 onClick={() =>
                                   downloadQRCode(url.QRCode, url.ShortCode)
                                 }
-                                className="text-sm text-blue-600 hover:text-blue-800"
+                                className="h-8"
                               >
-                                Download
-                              </button>
+                                <Download className="h-4 w-4" />
+                              </Button>
                             </>
                           )}
                         </div>
                       </TableCell>
-                      <TableCell className="w-[100px] text-right">
+                      <TableCell>
                         <div className="flex justify-end gap-2">
                           <Button
                             variant="ghost"
-                            size="sm"
+                            size="icon"
                             onClick={() => handleEdit(url)}
                           >
                             <Edit2 className="h-4 w-4" />
                           </Button>
                           <Button
-                            variant="destructive"
-                            size="sm"
+                            variant="ghost"
+                            size="icon"
+                            className="text-destructive hover:text-destructive"
                             onClick={() => setUrlToDelete(url.ID)}
                           >
                             <Trash2 className="h-4 w-4" />
@@ -328,8 +367,8 @@ export default function Profile() {
               </Table>
             </div>
           )}
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
       <AlertDialog
         open={!!urlToDelete}
@@ -375,20 +414,23 @@ export default function Profile() {
         </DialogContent>
       </Dialog>
 
+      {/* Enhanced QR Code Modal */}
       {selectedQR && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4"
+          className="fixed inset-0 bg-background/80 backdrop-blur-sm"
           onClick={() => setSelectedQR(null)}
         >
-          <div
-            className="bg-white p-4 rounded-lg"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <img
-              src={`data:image/png;base64,${selectedQR}`}
-              alt="QR Code Large"
-              className="w-64 h-64"
-            />
+          <div className="fixed inset-0 flex items-center justify-center p-4">
+            <div
+              className="bg-card p-6 rounded-lg shadow-lg"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <img
+                src={`data:image/png;base64,${selectedQR}`}
+                alt="QR Code Large"
+                className="w-64 h-64"
+              />
+            </div>
           </div>
         </div>
       )}
