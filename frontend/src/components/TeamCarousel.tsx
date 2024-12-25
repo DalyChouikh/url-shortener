@@ -6,6 +6,7 @@ import {
   CarouselItem,
   CarouselNext,
   CarouselPrevious,
+  type CarouselApi,
 } from "@/components/ui/carousel";
 import { TeamMember, roleTypes, teamCategories } from "@/data/team";
 import { Card, CardContent } from "@/components/ui/card";
@@ -21,6 +22,7 @@ export default function TeamCarousel({
   members,
   itemsPerPage = 9,
 }: TeamCarouselProps) {
+  const [api, setApi] = useState<CarouselApi>();
   const [selectedCategory, setSelectedCategory] = useState<CategoryType>(
     roleTypes.CORE
   );
@@ -59,6 +61,11 @@ export default function TeamCarousel({
     e: React.SyntheticEvent<HTMLImageElement, Event>
   ) => {
     e.currentTarget.src = "/placeholder-avatar-boy.png";
+  };
+
+  const handlePageChange = (index: number) => {
+    setCurrentPage(index);
+    api?.scrollTo(0);
   };
 
   return (
