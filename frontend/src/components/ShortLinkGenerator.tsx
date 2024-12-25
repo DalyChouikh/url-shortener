@@ -3,7 +3,7 @@ import { showToast } from "@/utils/toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Copy, Download, Loader2 } from "lucide-react";
+import { Copy, Download, Loader2, Link as LinkIcon, QrCode } from "lucide-react";
 
 const isValidUrl = (url: string): boolean => {
   try {
@@ -92,81 +92,99 @@ export default function ShortLinkGenerator() {
   };
 
   return (
-    <Card className="w-full max-w-md">
-      <CardHeader>
-        <CardTitle className="text-center">Generate Short Link</CardTitle>
-        <p className="text-center text-muted-foreground">
-          Enter a long URL to make a shorter one
-        </p>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="space-y-2">
-          <Input
-            type="url"
-            value={longUrl}
-            onChange={(e) => setLongUrl(e.target.value)}
-            placeholder="Enter your long URL"
-            disabled={isLoading}
-          />
-        </div>
-
-        <Button
-          className="w-full"
-          onClick={generateShortLink}
-          disabled={isLoading}
-        >
-          {isLoading ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Generating...
-            </>
-          ) : (
-            "Generate"
-          )}
-        </Button>
-
-        {shortUrl && (
-          <div className="mt-4">
-            <div className="flex items-center justify-between rounded-md border p-2">
-              <a
-                href={shortUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-primary hover:underline truncate"
-              >
-                {shortUrl}
-              </a>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={copyLink}
-                disabled={isLoading}
-              >
-                <Copy className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-        )}
-
-        {qrCode && (
-          <div className="mt-4 text-center space-y-4">
-            <img
-              src={`data:image/png;base64,${qrCode}`}
-              alt="QR Code"
-              className="mx-auto w-40 h-40"
+    <div className="container max-w-4xl mx-auto p-6">
+      <Card className="w-full">
+        <CardHeader>
+          <CardTitle className="flex items-center justify-center gap-2 text-2xl">
+            <LinkIcon className="h-6 w-6 text-primary" />
+            URL Shortener
+          </CardTitle>
+          <p className="text-center text-muted-foreground">
+            Create short, memorable links that are easy to share
+          </p>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="flex flex-col md:flex-row gap-4">
+            <Input
+              type="url"
+              value={longUrl}
+              onChange={(e) => setLongUrl(e.target.value)}
+              placeholder="Enter your long URL here..."
+              disabled={isLoading}
+              className="flex-1"
             />
             <Button
-              variant="outline"
-              onClick={downloadQRCode}
-              className="w-full"
+              className="md:w-32"
+              onClick={generateShortLink}
               disabled={isLoading}
             >
-              <Download className="mr-2 h-4 w-4" />
-              Download QR Code
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Working...
+                </>
+              ) : (
+                "Shorten"
+              )}
             </Button>
           </div>
-        )}
-      </CardContent>
-    </Card>
+
+          {shortUrl && (
+            <div className="space-y-6 rounded-lg border p-6">
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold">Your Shortened URL</h3>
+                <div className="flex items-center gap-4 p-3 bg-muted/50 rounded-md">
+                  <div className="flex-1 truncate">
+                    <a
+                      href={shortUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline font-medium"
+                    >
+                      {shortUrl}
+                    </a>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={copyLink}
+                    className="shrink-0"
+                  >
+                    <Copy className="h-4 w-4 mr-2" />
+                    Copy
+                  </Button>
+                </div>
+              </div>
+
+              {qrCode && (
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold flex items-center gap-2">
+                    <QrCode className="h-5 w-5" />
+                    QR Code
+                  </h3>
+                  <div className="flex flex-col items-center gap-4">
+                    <div className="p-4 bg-white rounded-xl shadow-sm">
+                      <img
+                        src={`data:image/png;base64,${qrCode}`}
+                        alt="QR Code"
+                        className="w-48 h-48"
+                      />
+                    </div>
+                    <Button
+                      variant="outline"
+                      onClick={downloadQRCode}
+                      className="w-full md:w-auto"
+                    >
+                      <Download className="mr-2 h-4 w-4" />
+                      Download QR Code
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
   );
 }
