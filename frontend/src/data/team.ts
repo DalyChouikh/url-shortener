@@ -1,7 +1,7 @@
 export interface TeamMember {
   id: string;
   name: string;
-  mainRole: string; 
+  mainRole: string;
   otherRoles: string[];
   imageUrl: string;
   socialLinks?: {
@@ -243,8 +243,8 @@ export const teamMembers: TeamMember[] = [
   {
     id: "19",
     name: "Younes Chouikh",
-    mainRole: roleTypes.COMMITTEE.TM,
-    otherRoles: [roleTypes.CORE],
+    mainRole: roleTypes.MENTOR,
+    otherRoles: [roleTypes.CORE, roleTypes.COMMITTEE.TM],
     imageUrl: "/team/younes-chouikh.png",
     socialLinks: {
       linkedin: "https://www.linkedin.com/in/younes-chouikh/",
