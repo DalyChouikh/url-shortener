@@ -13,8 +13,13 @@ import { events } from "@/data/events";
 import { memories } from "@/data/memories";
 import TeamCarousel from "./TeamCarousel";
 import EventGallery from "./EventGallery";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function About() {
+  const { user } = useAuth();
+  const handleLogin = () => {
+    window.location.href = "/auth/login";
+  };
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
@@ -170,19 +175,21 @@ export default function About() {
       </section>
 
       {/* Join Us Section */}
-      <section className="py-16">
-        <div className="max-w-4xl mx-auto text-center px-4">
-          <h2 className="text-3xl font-bold mb-6">Join Our Community</h2>
-          <p className="text-lg text-gray-600 mb-8">
-            Whether you're a beginner or an experienced developer, there's
-            always room for growth and learning in our community. Join us in our
-            next event!
-          </p>
-          <Button size="lg" variant="default">
-            Become a Member
-          </Button>
-        </div>
-      </section>
+      {!user && (
+        <section className="py-16">
+          <div className="max-w-4xl mx-auto text-center px-4">
+            <h2 className="text-3xl font-bold mb-6">Join Our Community</h2>
+            <p className="text-lg text-gray-600 mb-8">
+              Whether you're a beginner or an experienced developer, there's
+              always room for growth and learning in our community. Join us in
+              our next event!
+            </p>
+            <Button size="lg" variant="default" onClick={handleLogin}>
+              Become a Member
+            </Button>
+          </div>
+        </section>
+      )}
     </div>
   );
 }
