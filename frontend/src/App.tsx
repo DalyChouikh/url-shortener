@@ -15,6 +15,7 @@ import { ToastContainer } from "react-toastify";
 import Error from "@/components/Error";
 import Settings from "@/components/Settings";
 import Footer from "@/components/Footer";
+import About from "@/components/About";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -38,6 +39,7 @@ function AppRoutes() {
       <div className="flex-grow">
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/about" element={<About />} />
           <Route path="/callback" element={<AuthCallback />} />
           <Route
             path="/shorten"
