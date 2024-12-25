@@ -10,6 +10,8 @@ import {
 } from "@/components/ui/carousel";
 import { TeamMember, roleTypes, teamCategories } from "@/data/team";
 import { Card, CardContent } from "@/components/ui/card";
+//import { Github, Linkedin } from "lucide-react"; // Add this import
+import { FaGithub, FaLinkedin } from "react-icons/fa";
 
 type CategoryType = (typeof teamCategories)[number];
 
@@ -85,7 +87,7 @@ export default function TeamCarousel({
         ))}
       </div>
 
-      <Carousel className="w-full max-w-5xl mx-auto">
+      <Carousel className="w-full max-w-5xl mx-auto" setApi={setApi}>
         <CarouselContent>
           {currentMembers.map((member) => (
             <CarouselItem key={member.id} className="md:basis-1/3 lg:basis-1/3">
@@ -108,6 +110,29 @@ export default function TeamCarousel({
                         {role}
                       </p>
                     ))}
+                    {/* Add social links */}
+                    <div className="flex justify-center gap-2 mt-2">
+                      {member.socialLinks?.linkedin && (
+                        <a
+                          href={member.socialLinks.linkedin}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-gray-600 hover:text-blue-600"
+                        >
+                          <FaLinkedin className="w-5 h-5" />
+                        </a>
+                      )}
+                      {member.socialLinks?.github && (
+                        <a
+                          href={member.socialLinks.github}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-gray-600 hover:text-blue-600"
+                        >
+                          <FaGithub className="w-5 h-5" />
+                        </a>
+                      )}
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -125,7 +150,7 @@ export default function TeamCarousel({
               key={index}
               variant={currentPage === index ? "default" : "outline"}
               size="sm"
-              onClick={() => setCurrentPage(index)}
+              onClick={() => handlePageChange(index)}
             >
               {index + 1}
             </Button>
