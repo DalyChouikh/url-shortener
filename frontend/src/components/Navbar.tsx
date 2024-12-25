@@ -40,6 +40,26 @@ export default function Navbar() {
               Google Developer Groups - ISSATSo
             </span>
           </Link>
+
+          {/* Add navigation buttons */}
+          <div className="hidden md:flex items-center gap-4">
+            <Button
+              variant="ghost"
+              className="gap-2"
+              disabled={location.pathname === "/"}
+              onClick={() => navigate("/")}
+            >
+              Home
+            </Button>
+            <Button
+              variant="ghost"
+              className="gap-2"
+              disabled={location.pathname === "/about"}
+              onClick={() => navigate("/about")}
+            >
+              About
+            </Button>
+          </div>
         </div>
 
         <div className="flex items-center gap-4">
