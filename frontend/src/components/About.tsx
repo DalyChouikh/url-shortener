@@ -1,14 +1,16 @@
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Button } from "./ui/button";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
+import { FaYoutube, FaSpotify, FaInstagram } from "react-icons/fa";
 
 import { teamMembers } from "@/data/team";
 import { events } from "@/data/events";
+import { memories } from "@/data/memories";
 import TeamCarousel from "./TeamCarousel";
 import EventGallery from "./EventGallery";
 
@@ -65,22 +67,94 @@ export default function About() {
         </div>
       </section>
 
-      {/* Events Section */}
+      {/* Memories Section */}
+      <section className="py-16 bg-gradient-to-r from-blue-600 to-indigo-600">
+        <div className="max-w-7xl mx-auto px-4">
+          <h2 className="text-3xl font-bold text-center mb-12 text-white">
+            Our Memories
+          </h2>
+          <Carousel className="w-full">
+            <CarouselContent>
+              {memories.map((memory) => (
+                <CarouselItem key={memory.id} className="basis-full">
+                  <div className="aspect-[2/1] relative rounded-xl overflow-hidden">
+                    <img
+                      src={memory.imageUrl}
+                      alt={memory.title}
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-6">
+                      <h3 className="text-white text-xl font-semibold">
+                        {memory.title}
+                      </h3>
+                      <p className="text-white/80">{memory.description}</p>
+                    </div>
+                  </div>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            <CarouselPrevious className="text-white" />
+            <CarouselNext className="text-white" />
+          </Carousel>
+        </div>
+      </section>
+
+      {/* Podcast Section */}
       <section className="py-16">
         <div className="max-w-6xl mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-12">What We Do</h2>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
-            {events.map((event, index) => (
-              <Card key={index}>
-                <CardHeader>
-                  <div className="text-4xl mb-4">{event.imageUrl}</div>
-                  <CardTitle>{event.title}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <CardDescription>{event.description}</CardDescription>
-                </CardContent>
-              </Card>
-            ))}
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            <div>
+              <h2 className="text-3xl font-bold mb-6">
+                Tawla W Kressi Podcast
+              </h2>
+              <p className="text-gray-600 mb-6">
+                Join us in our exciting podcast series where we discuss
+                technology, share experiences, and interview inspiring people
+                from the tech community. Each episode brings unique insights and
+                valuable discussions.
+              </p>
+              <div className="flex gap-4">
+                <Button variant="outline" className="gap-2" asChild>
+                  <a
+                    href="https://www.youtube.com/@googledeveloperstudentclub7820"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <FaYoutube className="w-5 h-5" />
+                    YouTube
+                  </a>
+                </Button>
+                <Button variant="outline" className="gap-2" asChild>
+                  <a
+                    href="https://open.spotify.com/show/3wrC7hOR6OIImXuEkMqmPm"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <FaSpotify className="w-5 h-5" />
+                    Spotify
+                  </a>
+                </Button>
+                <Button variant="outline" className="gap-2" asChild>
+                  <a
+                    href="https://www.instagram.com/tawla_w_kressi"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <FaInstagram className="w-5 h-5" />
+                    Instagram
+                  </a>
+                </Button>
+              </div>
+            </div>
+            <div className="aspect-video rounded-xl overflow-hidden shadow-xl">
+              <iframe
+                className="w-full h-full"
+                src="https://www.youtube.com/embed/pO5rr6PQmqs"
+                title="Tawla W Kressi Latest Episode"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              ></iframe>
+            </div>
           </div>
         </div>
       </section>
