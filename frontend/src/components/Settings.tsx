@@ -20,6 +20,8 @@ import {
 } from "@/components/ui/card";
 import { Bell, Link2, UserCog, AlertTriangle } from "lucide-react";
 import { showToast } from "@/utils/toast";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 
 export default function Settings() {
   const { user, logout } = useAuth();
@@ -45,6 +47,16 @@ export default function Settings() {
 
   return (
     <div className="container max-w-4xl mx-auto p-6 space-y-8">
+      <Alert>
+        <div className="flex items-center gap-2">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription className="flex-1">
+            Some settings functionality is currently under development. Changes
+            may not be saved at this time.
+          </AlertDescription>
+        </div>
+      </Alert>
+
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Settings</h1>
