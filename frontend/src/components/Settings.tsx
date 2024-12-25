@@ -11,6 +11,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Bell, Link2, UserCog, AlertTriangle } from "lucide-react";
 import { showToast } from "@/utils/toast";
 
 export default function Settings() {
@@ -31,20 +39,39 @@ export default function Settings() {
   };
 
   const handleCancel = () => {
-    // Get the previous path from location state, or default to home
     const from = location.state?.from || "/";
     navigate(from);
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-8">
-      <h1 className="text-3xl font-bold">Settings</h1>
+    <div className="container max-w-4xl mx-auto p-6 space-y-8">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">Settings</h1>
+          <p className="text-muted-foreground">
+            Manage your account preferences and URL settings
+          </p>
+        </div>
+      </div>
 
-      <div className="rounded-lg border bg-card p-6">
-        <h2 className="text-xl font-semibold mb-4">URL Settings</h2>
-        <div className="space-y-4">
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <Link2 className="h-5 w-5 text-primary" />
+            <CardTitle>URL Settings</CardTitle>
+          </div>
+          <CardDescription>
+            Configure how your shortened URLs behave
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
           <div className="flex items-center justify-between">
-            <Label htmlFor="defaultExpiry">Default URL Expiration</Label>
+            <Label htmlFor="defaultExpiry" className="flex-1">
+              Default URL Expiration
+              <p className="text-sm text-muted-foreground">
+                Set when your shortened URLs should expire
+              </p>
+            </Label>
             <Select
               value={defaultUrlExpiry}
               onValueChange={setDefaultUrlExpiry}
@@ -62,11 +89,11 @@ export default function Settings() {
           </div>
 
           <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
+            <div className="flex-1">
               <Label htmlFor="analytics">URL Analytics</Label>
-              <div className="text-sm text-muted-foreground">
+              <p className="text-sm text-muted-foreground">
                 Track clicks and visitor information
-              </div>
+              </p>
             </div>
             <Switch
               id="analytics"
@@ -74,18 +101,26 @@ export default function Settings() {
               onCheckedChange={setUrlAnalytics}
             />
           </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
-      <div className="rounded-lg border bg-card p-6">
-        <h2 className="text-xl font-semibold mb-4">Notifications</h2>
-        <div className="space-y-4">
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <Bell className="h-5 w-5 text-primary" />
+            <CardTitle>Notifications</CardTitle>
+          </div>
+          <CardDescription>
+            Choose what notifications you want to receive
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
           <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
+            <div className="flex-1">
               <Label htmlFor="email-notifications">Email Notifications</Label>
-              <div className="text-sm text-muted-foreground">
-                Receive updates about your shortened URLs
-              </div>
+              <p className="text-sm text-muted-foreground">
+                Receive updates about your shortened URLs and account activity
+              </p>
             </div>
             <Switch
               id="email-notifications"
@@ -93,38 +128,52 @@ export default function Settings() {
               onCheckedChange={setEmailNotifications}
             />
           </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
-      <div className="rounded-lg border bg-card p-6">
-        <h2 className="text-xl font-semibold mb-4">Account</h2>
-        <div className="space-y-4">
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <UserCog className="h-5 w-5 text-primary" />
+            <CardTitle>Account</CardTitle>
+          </div>
+          <CardDescription>
+            Manage your account settings and preferences
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
           <div className="flex items-center justify-between">
-            <div>
-              <p className="font-medium">Connected Account</p>
+            <div className="flex-1">
+              <h3 className="font-medium">Connected Account</h3>
               <p className="text-sm text-muted-foreground">{user?.email}</p>
             </div>
-            <Button 
-              variant="outline" 
-              className="text-destructive"
+            <Button
+              variant="outline"
               onClick={handleDisconnect}
+              className="text-destructive hover:text-destructive"
             >
               Disconnect
             </Button>
           </div>
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="font-medium">Delete Account</p>
-              <p className="text-sm text-muted-foreground">
-                Permanently delete your account and all data
-              </p>
-            </div>
-            <Button variant="destructive">Delete Account</Button>
-          </div>
-        </div>
-      </div>
 
-      <div className="flex justify-end gap-4">
+          <div className="border-t pt-6">
+            <div className="flex items-center justify-between">
+              <div className="flex-1">
+                <div className="flex items-center gap-2">
+                  <AlertTriangle className="h-5 w-5 text-destructive" />
+                  <h3 className="font-medium text-destructive">Danger Zone</h3>
+                </div>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Permanently delete your account and all associated data
+                </p>
+              </div>
+              <Button variant="destructive">Delete Account</Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className="flex justify-end gap-4 pt-4">
         <Button variant="outline" onClick={handleCancel}>
           Cancel
         </Button>
