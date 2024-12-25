@@ -68,9 +68,9 @@ export default function Home() {
         showToast(
           `You must be logged in to access ${(redirectedFrom as string).replace(
             "/",
-            ""
+            "",
           )}.`,
-          "warning"
+          "warning",
         )}
 
       {/* Hero Section */}
@@ -139,25 +139,27 @@ export default function Home() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 bg-gray-50">
-        <div className="max-w-4xl mx-auto text-center px-4">
-          <h2 className="text-3xl font-bold mb-6">Ready to Get Started?</h2>
-          <p className="text-lg text-gray-600 mb-8">
-            Join our community today and be part of something amazing. Connect
-            with fellow developers, participate in events, and grow together.
-          </p>
-          {!user && (
-            <Button
-              size="lg"
-              onClick={() => (window.location.href = "/auth/login")}
-              className="gap-2"
-            >
-              <FaGoogle className="h-5 w-5" />
-              Join Now
-            </Button>
-          )}
-        </div>
-      </section>
+      {!user && (
+        <section className="py-16 bg-gray-50">
+          <div className="max-w-4xl mx-auto text-center px-4">
+            <h2 className="text-3xl font-bold mb-6">Ready to Get Started?</h2>
+            <p className="text-lg text-gray-600 mb-8">
+              Join our community today and be part of something amazing. Connect
+              with fellow developers, participate in events, and grow together.
+            </p>
+            {!user && (
+              <Button
+                size="lg"
+                onClick={() => (window.location.href = "/auth/login")}
+                className="gap-2"
+              >
+                <FaGoogle className="h-5 w-5" />
+                Join Now
+              </Button>
+            )}
+          </div>
+        </section>
+      )}
     </div>
   );
 }
