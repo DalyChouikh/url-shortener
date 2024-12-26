@@ -9,7 +9,7 @@ type URL struct {
 	LongURL   string `gorm:"not null"`
 	ShortCode string `gorm:"uniqueIndex;not null"`
 	Clicks    int64  `gorm:"default:0"`
-	UserID    uint   `gorm:"not null"`
+	UserID    uint   `gorm:"not null;constraint:OnDelete:CASCADE"`
 	User      User   `gorm:"foreignKey:UserID"`
 	QRCode    string `gorm:"type:text"`
 }
