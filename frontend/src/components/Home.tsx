@@ -1,6 +1,7 @@
 import { showToast } from "@/utils/toast";
 import { useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import NumberTicker from "@/components/ui/number-ticker";
 import {
   Card,
   CardContent,
@@ -56,10 +57,10 @@ export default function Home() {
   ];
 
   const stats = [
-    { number: "500+", label: "Active Members" },
-    { number: "50+", label: "Events Organized" },
-    { number: "1000+", label: "URLs Shortened" },
-    { number: "24/7", label: "Community Support" },
+    { number: 500, label: "Active Members", hasPlus: true },
+    { number: 50, label: "Events Organized", hasPlus: true },
+    { number: 1000, label: "URLs Shortened", hasPlus: true },
+    { number: "24/7", label: "Community Support", hasPlus: false },
   ];
 
   return (
@@ -104,7 +105,17 @@ export default function Home() {
             {stats.map((stat) => (
               <div key={stat.label} className="text-center">
                 <div className="text-4xl font-bold text-blue-600 mb-2">
-                  {stat.number}
+                  {stat.hasPlus ? (
+                    <>
+                      <NumberTicker
+                        className="text-blue-600"
+                        value={stat.number as number}
+                      />
+                      +
+                    </>
+                  ) : (
+                    stat.number
+                  )}
                 </div>
                 <div className="text-gray-600">{stat.label}</div>
               </div>
