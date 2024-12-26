@@ -49,6 +49,22 @@ func (h *URLHandler) HandleShortenURL(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(c.Request.Context(), 5*time.Second)
 	defer cancel()
 
+	urls, err := h.urlService.GetUserURLs(userID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch URLs"})
+		return
+	}
+
+	for _, url := range urls {
+		if url.LongURL == req.LongURL {
+			c.JSON(http.StatusOK, ShortenResponse{
+				ShortURL: fmt.Sprintf("%s/r/%s", h.urlService.BaseURL(), url.ShortCode),
+				QRCode:   url.QRCode,
+			})
+			return
+		}
+	}
+
 	url, qrCode, err := h.urlService.CreateShortURL(ctx, req.LongURL, userID)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
