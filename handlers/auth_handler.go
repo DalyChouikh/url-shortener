@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/DalyChouikh/url-shortener/services"
 	"github.com/gin-contrib/sessions"
@@ -111,4 +112,64 @@ func (h *AuthHandler) HandleGetProfile(c *gin.Context) {
 		"createdAt": user.CreatedAt,
 		"lastLogin": user.LastLoginAt,
 	})
+}
+
+func (h *AuthHandler) HandleDeleteUser(c *gin.Context) {
+	c.Header("Content-Type", "application/json")
+
+	session := sessions.Default(c)
+	userID := session.Get("user_id")
+
+	// Add debug logging
+	if userID == nil {
+		c.Header("X-Debug-Auth", "No user ID in session")
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+			"error": "unauthorized",
+		})
+		return
+	}
+	userIDParam := c.Param("id")
+
+	if userIDParam == "" {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"error": "missing user ID",
+		})
+		return
+	}
+
+	userIDParamInt, err := strconv.Atoi(userIDParam)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"error": "invalid user ID",
+		})
+		return
+	}
+
+	if userID.(uint) != uint(userIDParamInt) {
+		c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
+			"error": "forbidden",
+		})
+		return
+	}
+
+	err = h.authService.DeleteUser(userID.(uint))
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"error": "failed to delete user",
+		})
+		return
+	}
+
+	session.Clear()
+	session.Options(sessions.Options{
+		Path:     "/",
+		MaxAge:   -1,
+		Secure:   false,
+		HttpOnly: true,
+	})
+	session.Save()
+
+	c.SetCookie("mysession", "", -1, "/", "", false, true)
+	c.JSON(http.StatusOK, gin.H{"message": "User deleted successfully"})
+
 }

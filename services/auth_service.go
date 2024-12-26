@@ -94,9 +94,13 @@ func (s *AuthService) getUserInfo(accessToken string) (*GoogleUser, error) {
 }
 
 func (s *AuthService) GetUserByID(userID uint) (*models.User, error) {
-    user, err := s.userRepo.FindByID(userID)
-    if err != nil {
-        return nil, fmt.Errorf("failed to fetch user: %w", err)
-    }
-    return user, nil
+	user, err := s.userRepo.FindByID(userID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch user: %w", err)
+	}
+	return user, nil
+}
+
+func (s *AuthService) DeleteUser(userId uint) error {
+	return s.userRepo.DeleteUser(userId)
 }
