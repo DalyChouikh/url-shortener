@@ -22,6 +22,16 @@ import { Bell, Link2, UserCog, AlertTriangle } from "lucide-react";
 import { showToast } from "@/utils/toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export default function Settings() {
   const { user, logout } = useAuth();
@@ -30,6 +40,7 @@ export default function Settings() {
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [defaultUrlExpiry, setDefaultUrlExpiry] = useState("never");
   const [urlAnalytics, setUrlAnalytics] = useState(true);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const handleSaveSettings = async () => {
     // TODO: Implement settings save functionality
@@ -200,7 +211,10 @@ export default function Settings() {
                   Permanently delete your account and all associated data
                 </p>
               </div>
-              <Button variant="destructive" onClick={handleDeleteAccount}>
+              <Button
+                variant="destructive"
+                onClick={() => setShowDeleteDialog(true)}
+              >
                 Delete Account
               </Button>
             </div>
@@ -214,6 +228,39 @@ export default function Settings() {
         </Button>
         <Button onClick={handleSaveSettings}>Save Changes</Button>
       </div>
+
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-destructive">
+              Are you absolutely sure?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="space-y-3">
+              <p>
+                This action cannot be undone. This will permanently delete your
+                account and remove all associated data from our servers.
+              </p>
+              <p className="font-medium">
+                This includes:
+                <ul className="list-disc list-inside mt-2 space-y-1">
+                  <li>All your shortened URLs and their statistics</li>
+                  <li>Your profile information</li>
+                  <li>Your account settings and preferences</li>
+                </ul>
+              </p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteAccount}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete Account
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
