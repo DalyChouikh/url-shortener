@@ -66,7 +66,7 @@ func (h *URLHandler) HandleRedirect(c *gin.Context) {
 
 	longURL, err := h.urlService.GetLongURL(shortCode)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "URL not found"})
+		c.Redirect(http.StatusFound, "/?error=invalid_short_url")
 		return
 	}
 

@@ -11,11 +11,20 @@ import {
 } from "@/components/ui/card";
 import { FaGoogle } from "react-icons/fa";
 import { useAuth } from "@/contexts/AuthContext";
+import { useEffect } from "react";
 
 export default function Home() {
   const location = useLocation();
   const { user } = useAuth();
   const redirectedFrom = location.state?.from;
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const error = params.get('error');
+    if (error === 'invalid_short_url') {
+      showToast('The requested short URL was not found', 'error');
+    }
+  }, [location]);
 
   const features = [
     {
