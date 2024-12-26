@@ -45,6 +45,27 @@ export default function Settings() {
     navigate(from);
   };
 
+  const handleDeleteAccount = async () => {
+    try {
+      const response = await fetch(`/api/v1/users/${user?.id}`, {
+        method: "DELETE",
+        credentials: "include",
+        headers: {
+          Accept: "application/json",
+          "X-Requested-With": "XMLHttpRequest",
+        },
+      });
+
+      if (response.ok) {
+        await logout();
+      } else {
+        showToast("Failed to delete account", "error");
+      }
+    } catch (error) {
+      showToast("Failed to delete account", "error");
+    }
+  };
+
   return (
     <div className="container max-w-4xl mx-auto p-6 space-y-8">
       <Alert>
@@ -179,7 +200,9 @@ export default function Settings() {
                   Permanently delete your account and all associated data
                 </p>
               </div>
-              <Button variant="destructive">Delete Account</Button>
+              <Button variant="destructive" onClick={handleDeleteAccount}>
+                Delete Account
+              </Button>
             </div>
           </div>
         </CardContent>
