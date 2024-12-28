@@ -38,7 +38,6 @@ export default function EventGallery({ itemsPerPage = 6 }: EventGalleryProps) {
 
       if (response.ok) {
         const data = await response.json();
-        console.log(data);
         setEvents(data.results);
       } else {
         throw new Error("Failed to fetch events");
