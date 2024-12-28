@@ -3,7 +3,14 @@ import { showToast } from "@/utils/toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Copy, Download, Loader2, Link as LinkIcon, QrCode } from "lucide-react";
+import {
+  Copy,
+  Download,
+  Loader2,
+  Link as LinkIcon,
+  QrCode,
+  Check,
+} from "lucide-react";
 
 const isValidUrl = (url: string): boolean => {
   try {
@@ -19,6 +26,8 @@ export default function ShortLinkGenerator() {
   const [shortUrl, setShortUrl] = useState("");
   const [qrCode, setQrCode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isCopying, setIsCopying] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
 
   const generateShortLink = async () => {
     if (!longUrl) {
@@ -65,10 +74,13 @@ export default function ShortLinkGenerator() {
 
   const copyLink = async () => {
     try {
+      setIsCopying(true);
       await navigator.clipboard.writeText(shortUrl);
       showToast("Link copied to clipboard!", "success");
+      setTimeout(() => setIsCopying(false), 1000);
     } catch (err) {
       showToast("Failed to copy link", "error");
+      setIsCopying(false);
     }
   };
 
@@ -79,6 +91,7 @@ export default function ShortLinkGenerator() {
     }
 
     try {
+      setIsDownloading(true);
       const link = document.createElement("a");
       link.href = `data:image/png;base64,${qrCode}`;
       link.download = `qr-${shortUrl.split("/r/")[1]}.png`;
@@ -86,8 +99,10 @@ export default function ShortLinkGenerator() {
       link.click();
       document.body.removeChild(link);
       showToast("QR code downloaded successfully!", "success");
+      setTimeout(() => setIsDownloading(false), 1000);
     } catch (err) {
       showToast("Failed to download QR code", "error");
+      setIsDownloading(false);
     }
   };
 
@@ -149,8 +164,13 @@ export default function ShortLinkGenerator() {
                     size="sm"
                     onClick={copyLink}
                     className="shrink-0"
+                    disabled={isCopying}
                   >
-                    <Copy className="h-4 w-4 mr-2" />
+                    {isCopying ? (
+                      <Check className="h-4 w-4 text-green-500 mr-2" />
+                    ) : (
+                      <Copy className="h-4 w-4 mr-2" />
+                    )}
                     Copy
                   </Button>
                 </div>
@@ -174,8 +194,13 @@ export default function ShortLinkGenerator() {
                       variant="outline"
                       onClick={downloadQRCode}
                       className="w-full md:w-auto"
+                      disabled={isDownloading}
                     >
-                      <Download className="mr-2 h-4 w-4" />
+                      {isDownloading ? (
+                        <Check className="mr-2 h-4 w-4 text-green-500" />
+                      ) : (
+                        <Download className="mr-2 h-4 w-4" />
+                      )}
                       Download QR Code
                     </Button>
                   </div>

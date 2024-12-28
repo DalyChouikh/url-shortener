@@ -8,6 +8,7 @@ import {
   LinkIcon,
   Download,
   Loader2,
+  Check,
 } from "lucide-react";
 import { showToast } from "@/utils/toast";
 import { Button } from "@/components/ui/button";
@@ -55,6 +56,8 @@ const URLCard = ({
   onDelete,
   onQRClick,
   onQRDownload,
+  copyingId,
+  downloadingId,
 }: {
   url: URL;
   onCopy: (url: string) => void;
@@ -62,6 +65,8 @@ const URLCard = ({
   onDelete: (id: number) => void;
   onQRClick: (qr: string) => void;
   onQRDownload: (qr: string, code: string) => void;
+  copyingId: number | null;
+  downloadingId: number | null;
 }) => (
   <Card className="mb-4">
     <CardContent className="pt-6 space-y-4">
@@ -116,8 +121,13 @@ const URLCard = ({
           size="icon"
           onClick={() => onCopy(`${window.location.origin}/r/${url.ShortCode}`)}
           className="shrink-0"
+          disabled={copyingId === url.ID}
         >
-          <Copy className="h-4 w-4" />
+          {copyingId === url.ID ? (
+            <Check className="h-4 w-4 text-green-500" />
+          ) : (
+            <Copy className="h-4 w-4" />
+          )}
         </Button>
       </div>
 
@@ -139,8 +149,13 @@ const URLCard = ({
               variant="ghost"
               size="icon"
               onClick={() => onQRDownload(url.QRCode, url.ShortCode)}
+              disabled={downloadingId === url.ID}
             >
-              <Download className="h-4 w-4" />
+              {downloadingId === url.ID ? (
+                <Check className="h-4 w-4 text-green-500" />
+              ) : (
+                <Download className="h-4 w-4" />
+              )}
             </Button>
           </div>
         )}
@@ -161,23 +176,36 @@ export default function Profile() {
     "CreatedAt"
   );
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
+  const [copyingId, setCopyingId] = useState<number | null>(null);
+  const [downloadingId, setDownloadingId] = useState<number | null>(null);
 
-  const copyToClipboard = async (text: string) => {
+  const copyToClipboard = async (text: string, urlId: number) => {
     try {
+      setCopyingId(urlId);
       await navigator.clipboard.writeText(text);
       showToast("Link copied successfully", "success");
+      setTimeout(() => setCopyingId(null), 1000);
     } catch (err) {
       console.error("Failed to copy:", err);
+      setCopyingId(null);
     }
   };
 
-  const downloadQRCode = (qrCode: string, shortCode: string) => {
-    const link = document.createElement("a");
-    link.href = `data:image/png;base64,${qrCode}`;
-    link.download = `qr-${shortCode}.png`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const downloadQRCode = (qrCode: string, shortCode: string, urlId: number) => {
+    try {
+      setDownloadingId(urlId);
+      const link = document.createElement("a");
+      link.href = `data:image/png;base64,${qrCode}`;
+      link.download = `qr-${shortCode}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      showToast("QR code downloaded successfully", "success");
+      setTimeout(() => setDownloadingId(null), 1000);
+    } catch (err) {
+      console.error("Failed to download:", err);
+      setDownloadingId(null);
+    }
   };
 
   const handleDelete = async (urlId: number) => {
@@ -409,12 +437,18 @@ export default function Profile() {
                               size="icon"
                               onClick={() =>
                                 copyToClipboard(
-                                  `${window.location.origin}/r/${url.ShortCode}`
+                                  `${window.location.origin}/r/${url.ShortCode}`,
+                                  url.ID
                                 )
                               }
                               className="shrink-0"
+                              disabled={copyingId === url.ID}
                             >
-                              <Copy className="h-4 w-4" />
+                              {copyingId === url.ID ? (
+                                <Check className="h-4 w-4 text-green-500" />
+                              ) : (
+                                <Copy className="h-4 w-4" />
+                              )}
                             </Button>
                           </div>
                         </TableCell>
@@ -435,11 +469,20 @@ export default function Profile() {
                                   variant="ghost"
                                   size="sm"
                                   onClick={() =>
-                                    downloadQRCode(url.QRCode, url.ShortCode)
+                                    downloadQRCode(
+                                      url.QRCode,
+                                      url.ShortCode,
+                                      url.ID
+                                    )
                                   }
                                   className="h-8"
+                                  disabled={downloadingId === url.ID}
                                 >
-                                  <Download className="h-4 w-4" />
+                                  {downloadingId === url.ID ? (
+                                    <Check className="h-4 w-4 text-green-500" />
+                                  ) : (
+                                    <Download className="h-4 w-4" />
+                                  )}
                                 </Button>
                               </>
                             )}
@@ -476,11 +519,15 @@ export default function Profile() {
                   <URLCard
                     key={url.ID}
                     url={url}
-                    onCopy={copyToClipboard}
+                    onCopy={(text) => copyToClipboard(text, url.ID)}
                     onEdit={handleEdit}
                     onDelete={(id) => setUrlToDelete(id)}
                     onQRClick={(qr) => setSelectedQR(qr)}
-                    onQRDownload={downloadQRCode}
+                    onQRDownload={(qr, code) =>
+                      downloadQRCode(qr, code, url.ID)
+                    }
+                    copyingId={copyingId}
+                    downloadingId={downloadingId}
                   />
                 ))}
               </div>
