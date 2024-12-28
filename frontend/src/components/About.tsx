@@ -9,7 +9,6 @@ import {
 import { FaYoutube, FaSpotify, FaInstagram } from "react-icons/fa";
 
 import { teamMembers } from "@/data/team";
-import { events } from "@/data/events";
 import { memories } from "@/data/memories";
 import TeamCarousel from "./TeamCarousel";
 import EventGallery from "./EventGallery";
@@ -170,7 +169,7 @@ export default function About() {
           <h2 className="text-3xl font-bold text-center mb-12">
             Event Highlights
           </h2>
-          <EventGallery events={events} itemsPerPage={6} />
+          <EventGallery itemsPerPage={6} />
         </div>
       </section>
 
