@@ -48,6 +48,107 @@ interface URL {
   QRCode: string;
 }
 
+const URLCard = ({
+  url,
+  onCopy,
+  onEdit,
+  onDelete,
+  onQRClick,
+  onQRDownload,
+}: {
+  url: URL;
+  onCopy: (url: string) => void;
+  onEdit: (url: URL) => void;
+  onDelete: (id: number) => void;
+  onQRClick: (qr: string) => void;
+  onQRDownload: (qr: string, code: string) => void;
+}) => (
+  <Card className="mb-4">
+    <CardContent className="pt-6 space-y-4">
+      {/* Header with date and actions */}
+      <div className="flex justify-between items-start gap-2">
+        <div className="min-w-0 flex-1">
+          <p className="text-sm text-muted-foreground">
+            {new Date(url.CreatedAt).toLocaleDateString()}
+          </p>
+          <div className="truncate max-w-full">
+            <a
+              href={url.LongURL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary hover:underline text-sm"
+            >
+              {url.LongURL}
+            </a>
+          </div>
+        </div>
+        <div className="flex gap-1 shrink-0">
+          <Button variant="ghost" size="icon" onClick={() => onEdit(url)}>
+            <Edit2 className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-destructive hover:text-destructive"
+            onClick={() => onDelete(url.ID)}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+
+      {/* Short URL section */}
+      <div className="flex items-center gap-2 bg-muted/50 rounded-md p-2">
+        <div className="min-w-0 flex-1">
+          <div className="truncate">
+            <a
+              href={`/r/${url.ShortCode}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary hover:underline text-sm"
+            >
+              {`${window.location.origin}/r/${url.ShortCode}`}
+            </a>
+          </div>
+        </div>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => onCopy(`${window.location.origin}/r/${url.ShortCode}`)}
+          className="shrink-0"
+        >
+          <Copy className="h-4 w-4" />
+        </Button>
+      </div>
+
+      {/* Stats and QR section */}
+      <div className="flex justify-between items-center">
+        <div className="flex items-center gap-2">
+          <p className="text-sm font-medium">Clicks:</p>
+          <span className="text-sm">{url.Clicks}</span>
+        </div>
+        {url.QRCode && (
+          <div className="flex items-center gap-2">
+            <img
+              src={`data:image/png;base64,${url.QRCode}`}
+              alt="QR Code"
+              className="w-12 h-12 cursor-pointer object-contain rounded-md"
+              onClick={() => onQRClick(url.QRCode)}
+            />
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => onQRDownload(url.QRCode, url.ShortCode)}
+            >
+              <Download className="h-4 w-4" />
+            </Button>
+          </div>
+        )}
+      </div>
+    </CardContent>
+  </Card>
+);
+
 export default function Profile() {
   const { user } = useAuth();
   const [urls, setUrls] = useState<URL[]>([]);
@@ -241,131 +342,149 @@ export default function Profile() {
               </div>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead
-                      className="w-[120px] cursor-pointer hover:text-primary transition-colors"
-                      onClick={() => handleSort("CreatedAt")}
-                    >
-                      <div className="flex items-center gap-1">
-                        Created At
-                        <ArrowUpDown className="h-4 w-4" />
-                      </div>
-                    </TableHead>
-                    <TableHead className="w-[300px]">Original URL</TableHead>
-                    <TableHead className="w-[300px]">Short URL</TableHead>
-                    <TableHead
-                      className="w-[80px] text-center cursor-pointer hover:text-primary transition-colors"
-                      onClick={() => handleSort("Clicks")}
-                    >
-                      <div className="flex items-center justify-center gap-1">
-                        Clicks
-                        <ArrowUpDown className="h-4 w-4" />
-                      </div>
-                    </TableHead>
-                    <TableHead className="w-[150px] text-center">
-                      QR Code
-                    </TableHead>
-                    <TableHead className="w-[100px] text-right">
-                      Actions
-                    </TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {sortedUrls.map((url) => (
-                    <TableRow key={url.ID}>
-                      <TableCell className="w-[120px] text-muted-foreground">
-                        {new Date(url.CreatedAt).toLocaleDateString()}
-                      </TableCell>
-                      <TableCell className="max-w-[300px]">
-                        <div className="truncate">
-                          <a
-                            href={url.LongURL}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-primary hover:underline"
-                          >
-                            {url.LongURL}
-                          </a>
+            <>
+              {/* Desktop Table View */}
+              <div className="hidden md:block overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead
+                        className="w-[120px] cursor-pointer hover:text-primary transition-colors"
+                        onClick={() => handleSort("CreatedAt")}
+                      >
+                        <div className="flex items-center gap-1">
+                          Created At
+                          <ArrowUpDown className="h-4 w-4" />
                         </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <a
-                            href={`/r/${url.ShortCode}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-primary hover:underline truncate"
-                          >
-                            {`${window.location.origin}/r/${url.ShortCode}`}
-                          </a>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() =>
-                              copyToClipboard(
-                                `${window.location.origin}/r/${url.ShortCode}`
-                              )
-                            }
-                            className="shrink-0"
-                          >
-                            <Copy className="h-4 w-4" />
-                          </Button>
+                      </TableHead>
+                      <TableHead className="w-[300px]">Original URL</TableHead>
+                      <TableHead className="w-[300px]">Short URL</TableHead>
+                      <TableHead
+                        className="w-[80px] text-center cursor-pointer hover:text-primary transition-colors"
+                        onClick={() => handleSort("Clicks")}
+                      >
+                        <div className="flex items-center justify-center gap-1">
+                          Clicks
+                          <ArrowUpDown className="h-4 w-4" />
                         </div>
-                      </TableCell>
-                      <TableCell className="text-center font-medium">
-                        {url.Clicks}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-col items-center gap-2">
-                          {url.QRCode && (
-                            <>
-                              <img
-                                src={`data:image/png;base64,${url.QRCode}`}
-                                alt="QR Code"
-                                className="w-16 h-16 cursor-pointer hover:scale-105 transition-transform"
-                                onClick={() => setSelectedQR(url.QRCode)}
-                              />
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() =>
-                                  downloadQRCode(url.QRCode, url.ShortCode)
-                                }
-                                className="h-8"
-                              >
-                                <Download className="h-4 w-4" />
-                              </Button>
-                            </>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex justify-end gap-2">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleEdit(url)}
-                          >
-                            <Edit2 className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="text-destructive hover:text-destructive"
-                            onClick={() => setUrlToDelete(url.ID)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
+                      </TableHead>
+                      <TableHead className="w-[150px] text-center">
+                        QR Code
+                      </TableHead>
+                      <TableHead className="w-[100px] text-right">
+                        Actions
+                      </TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
+                  </TableHeader>
+                  <TableBody>
+                    {sortedUrls.map((url) => (
+                      <TableRow key={url.ID}>
+                        <TableCell className="w-[120px] text-muted-foreground">
+                          {new Date(url.CreatedAt).toLocaleDateString()}
+                        </TableCell>
+                        <TableCell className="max-w-[300px]">
+                          <div className="truncate">
+                            <a
+                              href={url.LongURL}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-primary hover:underline"
+                            >
+                              {url.LongURL}
+                            </a>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <a
+                              href={`/r/${url.ShortCode}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-primary hover:underline truncate"
+                            >
+                              {`${window.location.origin}/r/${url.ShortCode}`}
+                            </a>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() =>
+                                copyToClipboard(
+                                  `${window.location.origin}/r/${url.ShortCode}`
+                                )
+                              }
+                              className="shrink-0"
+                            >
+                              <Copy className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-center font-medium">
+                          {url.Clicks}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex flex-col items-center gap-2">
+                            {url.QRCode && (
+                              <>
+                                <img
+                                  src={`data:image/png;base64,${url.QRCode}`}
+                                  alt="QR Code"
+                                  className="w-16 h-16 cursor-pointer hover:scale-105 transition-transform"
+                                  onClick={() => setSelectedQR(url.QRCode)}
+                                />
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() =>
+                                    downloadQRCode(url.QRCode, url.ShortCode)
+                                  }
+                                  className="h-8"
+                                >
+                                  <Download className="h-4 w-4" />
+                                </Button>
+                              </>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex justify-end gap-2">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleEdit(url)}
+                            >
+                              <Edit2 className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="text-destructive hover:text-destructive"
+                              onClick={() => setUrlToDelete(url.ID)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+
+              {/* Mobile Card View */}
+              <div className="md:hidden space-y-4 px-2">
+                {sortedUrls.map((url) => (
+                  <URLCard
+                    key={url.ID}
+                    url={url}
+                    onCopy={copyToClipboard}
+                    onEdit={handleEdit}
+                    onDelete={(id) => setUrlToDelete(id)}
+                    onQRClick={(qr) => setSelectedQR(qr)}
+                    onQRDownload={downloadQRCode}
+                  />
+                ))}
+              </div>
+            </>
           )}
         </CardContent>
       </Card>
