@@ -11,20 +11,44 @@ import {
 } from "@/components/ui/card";
 import { FaGoogle } from "react-icons/fa";
 import { useAuth } from "@/contexts/AuthContext";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
+import { Info } from "lucide-react";
 
 export default function Home() {
   const location = useLocation();
   const { user } = useAuth();
   const redirectedFrom = location.state?.from;
+  const [openHoverCard, setOpenHoverCard] = useState<string | null>(null);
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    const error = params.get('error');
-    if (error === 'invalid_short_url') {
-      showToast('The requested short URL was not found', 'error');
+    const error = params.get("error");
+    if (error === "invalid_short_url") {
+      showToast("The requested short URL was not found", "error");
     }
   }, [location]);
+
+  const handleFeatureClick = (feature: string) => {
+    if (feature === "URL Shortener") {
+      if (user) {
+        window.location.href = "/shorten";
+      } else {
+        window.location.href = "/auth/login";
+      }
+    } else {
+      showToast(`The ${feature} feature is coming soon!`, "info");
+    }
+  };
+
+  const handleInfoClick = (e: React.MouseEvent, title: string) => {
+    e.stopPropagation();
+    setOpenHoverCard(openHoverCard === title ? null : title);
+  };
 
   const features = [
     {
@@ -32,36 +56,42 @@ export default function Home() {
       description:
         "Transform long URLs into concise, shareable links instantly. Each shortened URL comes with a QR code for easy mobile access.",
       icon: "🔗",
+      implemented: true,
     },
     {
       title: "Real-time Chat",
       description:
         "Connect with community members through instant messaging. Share ideas, code snippets, and collaborate in real-time.",
       icon: "💬",
+      implemented: false,
     },
     {
       title: "Event Management",
       description:
         "Stay updated with upcoming workshops, hackathons, and tech talks. Never miss an opportunity to learn and grow.",
       icon: "📅",
+      implemented: false,
     },
     {
       title: "Community Polls",
       description:
         "Voice your opinion and participate in community decisions. Help shape the future of our tech community.",
       icon: "📊",
+      implemented: false,
     },
     {
       title: "Meeting Scheduler",
       description:
         "Seamlessly organize and coordinate team meetings. Integrated calendar ensures everyone stays in sync.",
       icon: "🗓️",
+      implemented: false,
     },
     {
       title: "Resource Hub",
       description:
         "Access a curated collection of learning materials, documentation, and community resources.",
       icon: "📚",
+      implemented: false,
     },
   ];
 
@@ -78,9 +108,9 @@ export default function Home() {
         showToast(
           `You must be logged in to access ${(redirectedFrom as string).replace(
             "/",
-            "",
+            ""
           )}.`,
-          "warning",
+          "warning"
         )}
 
       {/* Hero Section */}
@@ -143,8 +173,44 @@ export default function Home() {
             {features.map((feature) => (
               <Card
                 key={feature.title}
-                className="hover:shadow-lg transition-shadow"
+                className="hover:shadow-lg transition-shadow cursor-pointer hover:scale-105 transition-transform duration-200 relative"
+                onClick={() => handleFeatureClick(feature.title)}
               >
+                {!feature.implemented && (
+                  <div
+                    className="absolute top-4 right-4 z-50"
+                    onClick={(e) => handleInfoClick(e, feature.title)}
+                  >
+                    <HoverCard
+                      open={openHoverCard === feature.title}
+                      onOpenChange={(open) => !open && setOpenHoverCard(null)}
+                    >
+                      <HoverCardTrigger asChild>
+                        <button className="cursor-pointer focus:outline-none">
+                          <Info className="h-5 w-5 text-muted-foreground" />
+                        </button>
+                      </HoverCardTrigger>
+                      <HoverCardContent
+                        className="w-80 z-[60]"
+                        side="top"
+                        align="end"
+                        sideOffset={5}
+                      >
+                        <div className="flex justify-between space-x-4">
+                          <div className="space-y-1">
+                            <h4 className="text-sm font-semibold">
+                              Coming Soon
+                            </h4>
+                            <p className="text-sm text-muted-foreground">
+                              This feature is currently under development and
+                              will be available soon. Stay tuned for updates!
+                            </p>
+                          </div>
+                        </div>
+                      </HoverCardContent>
+                    </HoverCard>
+                  </div>
+                )}
                 <CardHeader>
                   <div className="text-4xl mb-4">{feature.icon}</div>
                   <CardTitle>{feature.title}</CardTitle>
