@@ -17,13 +17,12 @@ export const roleTypes = {
     TM: "TM Committee Lead",
     MKT: "MKT Committee Lead",
     EER: "EER Committee Lead",
-    TECH: "Technical Committee Lead",
+    TECH: "Technical Lead",
   },
   COMMITTEE: {
-    TM: "TM Committee Member",
-    MKT: "MKT Committee Member",
-    EER: "EER Committee Member",
-    TECH: "Technical Committee Member",
+    TM: "TM Committee",
+    MKT: "MKT Committee",
+    EER: "EER Committee",
   },
   MENTOR: "Mentor",
 } as const;
@@ -31,14 +30,10 @@ export const roleTypes = {
 export const teamCategories = [
   roleTypes.CORE,
   roleTypes.LEAD.GDG,
-  roleTypes.LEAD.TM,
-  roleTypes.LEAD.MKT,
-  roleTypes.LEAD.EER,
   roleTypes.LEAD.TECH,
   roleTypes.COMMITTEE.TM,
   roleTypes.COMMITTEE.MKT,
   roleTypes.COMMITTEE.EER,
-  roleTypes.MENTOR,
 ];
 
 export const teamMembers: TeamMember[] = [
@@ -57,7 +52,7 @@ export const teamMembers: TeamMember[] = [
     id: "2",
     name: "Tesnim Mansour",
     mainRole: roleTypes.LEAD.MKT,
-    otherRoles: [roleTypes.CORE],
+    otherRoles: [roleTypes.CORE, roleTypes.COMMITTEE.MKT],
     imageUrl: "/team/tesnim-mansour.png",
     socialLinks: {
       linkedin: "https://www.linkedin.com/in/tesnim-mansour-30223222a/",
@@ -79,7 +74,7 @@ export const teamMembers: TeamMember[] = [
     id: "4",
     name: "Meriem Souiai",
     mainRole: roleTypes.LEAD.TM,
-    otherRoles: [roleTypes.CORE],
+    otherRoles: [roleTypes.CORE, roleTypes.COMMITTEE.TM],
     imageUrl: "/team/meriam-souiai.jpg",
     socialLinks: {
       linkedin: "https://www.linkedin.com/in/meriamsouiai/",
@@ -90,7 +85,7 @@ export const teamMembers: TeamMember[] = [
     id: "5",
     name: "Nagham Zerrim",
     mainRole: roleTypes.LEAD.EER,
-    otherRoles: [roleTypes.CORE],
+    otherRoles: [roleTypes.CORE, roleTypes.COMMITTEE.EER],
     imageUrl: "/team/nagham-zerrim.jpg",
     socialLinks: {
       linkedin: "https://www.linkedin.com/in/nagham-zerrim-867060272/",

@@ -30,12 +30,23 @@ export default function TeamCarousel({
   );
   const [currentPage, setCurrentPage] = useState(0);
 
-  const filteredMembers = members.filter(
-    (member) =>
-      selectedCategory === roleTypes.CORE ||
+  const filteredMembers = members.filter((member) => {
+    if (selectedCategory === roleTypes.CORE) return true;
+
+    // Check if member is a lead of the corresponding committee
+    const isCommitteeLead = Object.values(roleTypes.LEAD).some(
+      (leadRole) =>
+        member.mainRole === leadRole &&
+        leadRole.includes(selectedCategory.split(" ")[0]) // Match committee prefix (TM, MKT, EER)
+    );
+
+    // Include if they're either the lead or a regular committee member
+    return (
+      isCommitteeLead ||
       member.mainRole === selectedCategory ||
-      member.otherRoles.includes(selectedCategory)
-  );
+      (member.otherRoles.includes(selectedCategory) && !isCommitteeLead)
+    );
+  });
 
   const sortedMembers = [...filteredMembers].sort((a, b) => {
     const getRoleWeight = (member: TeamMember) => {
@@ -105,11 +116,25 @@ export default function TeamCarousel({
                     </div>
                     <h3 className="font-semibold">{member.name}</h3>
                     <p className="text-sm text-gray-600">{member.mainRole}</p>
-                    {member.otherRoles.map((role, index) => (
-                      <p key={index} className="text-xs text-gray-400">
-                        {role}
-                      </p>
-                    ))}
+                    {member.otherRoles
+                      .filter((role) => {
+                        if (role === roleTypes.CORE) return true;
+
+                        const isCommitteeLead = Object.values(
+                          roleTypes.LEAD
+                        ).some(
+                          (leadRole) =>
+                            member.mainRole === leadRole &&
+                            leadRole.includes(role.split(" ")[0])
+                        );
+
+                        return !isCommitteeLead;
+                      })
+                      .map((role, index) => (
+                        <p key={index} className="text-xs text-gray-400">
+                          {role}
+                        </p>
+                      ))}
                     {/* Add social links */}
                     <div className="flex justify-center gap-2 mt-2">
                       {member.socialLinks?.linkedin && (
