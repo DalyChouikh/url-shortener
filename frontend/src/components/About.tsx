@@ -117,7 +117,7 @@ export default function About() {
                 from the tech community. Each episode brings unique insights and
                 valuable discussions.
               </p>
-              <div className="flex gap-4">
+              <div className="flex flex-wrap gap-4">
                 <Button variant="outline" className="gap-2" asChild>
                   <a
                     href="https://www.youtube.com/@googledeveloperstudentclub7820"
