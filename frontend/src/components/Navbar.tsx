@@ -163,14 +163,18 @@ export default function Navbar() {
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem
                       onClick={() => navigate("/")}
-                      disabled={location.pathname === "/"}
+                      className={cn(
+                        location.pathname === "/" && "bg-primary/10"
+                      )}
                     >
                       <Home className="mr-2 h-4 w-4" />
                       Home
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       onClick={() => navigate("/about")}
-                      disabled={location.pathname === "/about"}
+                      className={cn(
+                        location.pathname === "/about" && "bg-primary/10"
+                      )}
                     >
                       <Info className="mr-2 h-4 w-4" />
                       About
