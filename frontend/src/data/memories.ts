@@ -54,5 +54,11 @@ export const memories: Memory[] = [
     imageUrl: "/memories/monastir-2024.jpg",
     title: "Monastir 2024",
     description: "A Day full of fun and team activities",
+  }, 
+  {
+    id: 9,
+    imageUrl: "/memories/kantaoui-2024.jpg",
+    title: "Sousse 2024",
+    description: "A Day full of fun and team activities",
   }
 ];
