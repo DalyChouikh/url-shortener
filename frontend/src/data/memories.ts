@@ -49,4 +49,10 @@ export const memories: Memory[] = [
     title: "El Sogno Camp 2024",
     description: "The Usual Camping spot for the team",
   },
+  {
+    id: 8,
+    imageUrl: "/memories/monastir-2024.jpg",
+    title: "Monastir 2024",
+    description: "A Day full of fun and team activities",
+  }
 ];
