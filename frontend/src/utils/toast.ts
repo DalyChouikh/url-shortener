@@ -14,7 +14,7 @@ const toastOptions: ToastOptions = {
 
 export function showToast(
   message: string,
-  type: "error" | "success" | "warning",
+  type: "error" | "success" | "warning" | "info",
 ): void {
   switch (type) {
     case "error":
@@ -25,6 +25,9 @@ export function showToast(
       break;
     case "warning":
       toast.warning(message, toastOptions);
+      break;
+    case "info":
+      toast.info(message, toastOptions);
       break;
   }
 }
