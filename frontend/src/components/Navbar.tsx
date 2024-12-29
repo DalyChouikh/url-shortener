@@ -19,6 +19,7 @@ import {
   Menu,
   Home,
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export default function Navbar() {
   const { user, logout } = useAuth();
@@ -37,6 +38,23 @@ export default function Navbar() {
     navigate("/settings", { state: { from: location.pathname } });
   };
 
+  const NavLink = ({ to, children, className }: { to: string, children: React.ReactNode, className?: string }) => {
+    const isActive = location.pathname === to;
+    return (
+      <Button
+        variant={isActive ? "secondary" : "ghost"}
+        className={cn(
+          "gap-2",
+          isActive && "bg-primary/10 hover:bg-primary/15",
+          className
+        )}
+        onClick={() => navigate(to)}
+      >
+        {children}
+      </Button>
+    );
+  };
+
   return (
     <nav className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center px-4 mx-auto">
@@ -50,37 +68,18 @@ export default function Navbar() {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-4">
-            <Button
-              variant="ghost"
-              className="gap-2"
-              disabled={location.pathname === "/"}
-              onClick={() => navigate("/")}
-            >
-              Home
-            </Button>
-            <Button
-              variant="ghost"
-              className="gap-2"
-              disabled={location.pathname === "/about"}
-              onClick={() => navigate("/about")}
-            >
-              About
-            </Button>
+            <NavLink to="/">Home</NavLink>
+            <NavLink to="/about">About</NavLink>
           </div>
         </div>
 
         <div className="flex items-center gap-4">
           {user ? (
             <>
-              <Button
-                variant="ghost"
-                className="gap-2"
-                disabled={location.pathname === "/shorten"}
-                onClick={() => navigate("/shorten")}
-              >
+              <NavLink to="/shorten" className="gap-2">
                 <LinkIcon className="h-4 w-4" />
                 <span className="inline">Shorten URL</span>
-              </Button>
+              </NavLink>
 
               {/* User Dropdown */}
               <DropdownMenu>
@@ -99,14 +98,18 @@ export default function Navbar() {
                   <div className="md:hidden">
                     <DropdownMenuItem
                       onClick={() => navigate("/")}
-                      disabled={location.pathname === "/"}
+                      className={cn(
+                        location.pathname === "/" && "bg-primary/10"
+                      )}
                     >
                       <Home className="mr-2 h-4 w-4" />
                       Home
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       onClick={() => navigate("/about")}
-                      disabled={location.pathname === "/about"}
+                      className={cn(
+                        location.pathname === "/about" && "bg-primary/10"
+                      )}
                     >
                       <Info className="mr-2 h-4 w-4" />
                       About
@@ -116,14 +119,18 @@ export default function Navbar() {
 
                   <DropdownMenuItem
                     onClick={() => navigate("/profile")}
-                    disabled={location.pathname === "/profile"}
+                    className={cn(
+                      location.pathname === "/profile" && "bg-primary/10"
+                    )}
                   >
                     <User className="mr-2 h-4 w-4" />
                     Profile
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     onClick={handleSettingsClick}
-                    disabled={location.pathname === "/settings"}
+                    className={cn(
+                      location.pathname === "/settings" && "bg-primary/10"
+                    )}
                   >
                     <Settings className="mr-2 h-4 w-4" />
                     Settings
