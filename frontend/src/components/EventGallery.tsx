@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { type CarouselApi } from "@/components/ui/carousel";
 import { Button } from "@/components/ui/button";
 import {
   Carousel,
@@ -12,6 +13,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { showToast } from "@/utils/toast";
 
 export default function EventGallery() {
+  const [api, setApi] = useState<CarouselApi>();
   const [selectedCategory, setSelectedCategory] = useState<EventCategory>(
     EventCategory.All,
   );
@@ -44,6 +46,12 @@ export default function EventGallery() {
     getEvents();
   }, []);
 
+  useEffect(() => {
+    if (api) {
+      api.scrollTo(0);
+    }
+  }, [selectedCategory, api]);
+
   const filteredEvents = events.filter(
     (event) =>
       selectedCategory === EventCategory.All ||
@@ -66,7 +74,7 @@ export default function EventGallery() {
         ))}
       </div>
 
-      <Carousel className="w-full max-w-5xl mx-auto">
+      <Carousel className="w-full max-w-5xl mx-auto" setApi={setApi}>
         <CarouselContent>
           {filteredEvents.map((event, index) => (
             <CarouselItem key={index} className="md:basis-1/2">

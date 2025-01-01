@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { type CarouselApi } from "@/components/ui/carousel";
 import { Button } from "@/components/ui/button";
 import {
   Carousel,
@@ -18,8 +19,9 @@ interface TeamCarouselProps {
 }
 
 export default function TeamCarousel({ members }: TeamCarouselProps) {
+  const [api, setApi] = useState<CarouselApi>();
   const [selectedCategory, setSelectedCategory] = useState<CategoryType>(
-    roleTypes.CORE,
+    roleTypes.CORE
   );
 
   const filteredMembers = members.filter((member) => {
@@ -29,7 +31,7 @@ export default function TeamCarousel({ members }: TeamCarouselProps) {
     const isCommitteeLead = Object.values(roleTypes.LEAD).some(
       (leadRole) =>
         member.mainRole === leadRole &&
-        leadRole.includes(selectedCategory.split(" ")[0]), // Match committee prefix (TM, MKT, EER)
+        leadRole.includes(selectedCategory.split(" ")[0]) // Match committee prefix (TM, MKT, EER)
     );
 
     // Include if they're either the lead or a regular committee member
@@ -46,7 +48,7 @@ export default function TeamCarousel({ members }: TeamCarouselProps) {
       if (member.otherRoles.includes(roleTypes.CORE)) return 2;
       if (
         Object.values(roleTypes.LEAD).some(
-          (leadRole) => member.mainRole === leadRole,
+          (leadRole) => member.mainRole === leadRole
         )
       )
         return 3;
@@ -57,10 +59,16 @@ export default function TeamCarousel({ members }: TeamCarouselProps) {
   });
 
   const handleImageError = (
-    e: React.SyntheticEvent<HTMLImageElement, Event>,
+    e: React.SyntheticEvent<HTMLImageElement, Event>
   ) => {
     e.currentTarget.src = "/placeholder-avatar-boy.png";
   };
+
+  useEffect(() => {
+    if (api) {
+      api.scrollTo(0);
+    }
+  }, [selectedCategory, api]);
 
   return (
     <div className="space-y-6">
@@ -78,7 +86,7 @@ export default function TeamCarousel({ members }: TeamCarouselProps) {
         ))}
       </div>
 
-      <Carousel className="w-full max-w-5xl mx-auto">
+      <Carousel className="w-full max-w-5xl mx-auto" setApi={setApi}>
         <CarouselContent>
           {sortedMembers.map((member) => (
             <CarouselItem key={member.id} className="md:basis-1/3 lg:basis-1/3">
@@ -101,11 +109,11 @@ export default function TeamCarousel({ members }: TeamCarouselProps) {
                         if (role === roleTypes.CORE) return true;
 
                         const isCommitteeLead = Object.values(
-                          roleTypes.LEAD,
+                          roleTypes.LEAD
                         ).some(
                           (leadRole) =>
                             member.mainRole === leadRole &&
-                            leadRole.includes(role.split(" ")[0]),
+                            leadRole.includes(role.split(" ")[0])
                         );
 
                         return !isCommitteeLead;
