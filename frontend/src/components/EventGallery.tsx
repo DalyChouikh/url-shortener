@@ -6,23 +6,16 @@ import {
   CarouselItem,
   CarouselNext,
   CarouselPrevious,
-  type CarouselApi,
 } from "@/components/ui/carousel";
 import { Event, eventCategories, EventCategory } from "@/data/events";
 import { Card, CardContent } from "@/components/ui/card";
 import { showToast } from "@/utils/toast";
 
-interface EventGalleryProps {
-  itemsPerPage?: number;
-}
-
-export default function EventGallery({ itemsPerPage = 6 }: EventGalleryProps) {
-  const [api, setApi] = useState<CarouselApi>();
+export default function EventGallery() {
   const [selectedCategory, setSelectedCategory] = useState<EventCategory>(
     EventCategory.All,
   );
   const [events, setEvents] = useState<Event[]>([]);
-  const [currentPage, setCurrentPage] = useState(0);
 
   const getEvents = async () => {
     try {
@@ -56,16 +49,6 @@ export default function EventGallery({ itemsPerPage = 6 }: EventGalleryProps) {
       selectedCategory === EventCategory.All ||
       event.event_type_title === selectedCategory,
   );
-  const totalPages = Math.ceil(filteredEvents.length / itemsPerPage);
-  const currentEvents = filteredEvents.slice(
-    currentPage * itemsPerPage,
-    (currentPage + 1) * itemsPerPage,
-  );
-
-  const handlePageChange = (index: number) => {
-    setCurrentPage(index);
-    api?.scrollTo(0);
-  };
 
   return (
     <div className="space-y-6">
@@ -76,7 +59,6 @@ export default function EventGallery({ itemsPerPage = 6 }: EventGalleryProps) {
             variant={selectedCategory === category ? "default" : "outline"}
             onClick={() => {
               setSelectedCategory(category);
-              setCurrentPage(0);
             }}
           >
             {category}
@@ -84,9 +66,9 @@ export default function EventGallery({ itemsPerPage = 6 }: EventGalleryProps) {
         ))}
       </div>
 
-      <Carousel className="w-full max-w-5xl mx-auto" setApi={setApi}>
+      <Carousel className="w-full max-w-5xl mx-auto">
         <CarouselContent>
-          {currentEvents.map((event, index) => (
+          {filteredEvents.map((event, index) => (
             <CarouselItem key={index} className="md:basis-1/2">
               <Card>
                 <CardContent className="flex aspect-video items-center justify-center p-6">
@@ -119,21 +101,6 @@ export default function EventGallery({ itemsPerPage = 6 }: EventGalleryProps) {
         <CarouselPrevious />
         <CarouselNext />
       </Carousel>
-
-      {totalPages > 1 && (
-        <div className="flex justify-center gap-2">
-          {Array.from({ length: totalPages }).map((_, index) => (
-            <Button
-              key={index}
-              variant={currentPage === index ? "default" : "outline"}
-              size="sm"
-              onClick={() => handlePageChange(index)}
-            >
-              {index + 1}
-            </Button>
-          ))}
-        </div>
-      )}
     </div>
   );
 }

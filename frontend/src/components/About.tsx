@@ -67,7 +67,7 @@ export default function About() {
       <section className="py-16 bg-gray-50">
         <div className="max-w-6xl mx-auto px-4">
           <h2 className="text-3xl font-bold text-center mb-12">Our Team</h2>
-          <TeamCarousel members={teamMembers} itemsPerPage={9} />
+          <TeamCarousel members={teamMembers} />
         </div>
       </section>
 
@@ -169,7 +169,7 @@ export default function About() {
           <h2 className="text-3xl font-bold text-center mb-12">
             Event Highlights
           </h2>
-          <EventGallery itemsPerPage={6} />
+          <EventGallery />
         </div>
       </section>
 

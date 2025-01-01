@@ -6,29 +6,21 @@ import {
   CarouselItem,
   CarouselNext,
   CarouselPrevious,
-  type CarouselApi,
 } from "@/components/ui/carousel";
 import { TeamMember, roleTypes, teamCategories } from "@/data/team";
 import { Card, CardContent } from "@/components/ui/card";
-//import { Github, Linkedin } from "lucide-react"; // Add this import
 import { FaGithub, FaLinkedin } from "react-icons/fa";
 
 type CategoryType = (typeof teamCategories)[number];
 
 interface TeamCarouselProps {
   members: TeamMember[];
-  itemsPerPage?: number;
 }
 
-export default function TeamCarousel({
-  members,
-  itemsPerPage = 9,
-}: TeamCarouselProps) {
-  const [api, setApi] = useState<CarouselApi>();
+export default function TeamCarousel({ members }: TeamCarouselProps) {
   const [selectedCategory, setSelectedCategory] = useState<CategoryType>(
-    roleTypes.CORE
+    roleTypes.CORE,
   );
-  const [currentPage, setCurrentPage] = useState(0);
 
   const filteredMembers = members.filter((member) => {
     if (selectedCategory === roleTypes.CORE) return true;
@@ -37,7 +29,7 @@ export default function TeamCarousel({
     const isCommitteeLead = Object.values(roleTypes.LEAD).some(
       (leadRole) =>
         member.mainRole === leadRole &&
-        leadRole.includes(selectedCategory.split(" ")[0]) // Match committee prefix (TM, MKT, EER)
+        leadRole.includes(selectedCategory.split(" ")[0]), // Match committee prefix (TM, MKT, EER)
     );
 
     // Include if they're either the lead or a regular committee member
@@ -54,7 +46,7 @@ export default function TeamCarousel({
       if (member.otherRoles.includes(roleTypes.CORE)) return 2;
       if (
         Object.values(roleTypes.LEAD).some(
-          (leadRole) => member.mainRole === leadRole
+          (leadRole) => member.mainRole === leadRole,
         )
       )
         return 3;
@@ -64,21 +56,10 @@ export default function TeamCarousel({
     return getRoleWeight(a) - getRoleWeight(b);
   });
 
-  const totalPages = Math.ceil(sortedMembers.length / itemsPerPage);
-  const currentMembers = sortedMembers.slice(
-    currentPage * itemsPerPage,
-    (currentPage + 1) * itemsPerPage
-  );
-
   const handleImageError = (
-    e: React.SyntheticEvent<HTMLImageElement, Event>
+    e: React.SyntheticEvent<HTMLImageElement, Event>,
   ) => {
     e.currentTarget.src = "/placeholder-avatar-boy.png";
-  };
-
-  const handlePageChange = (index: number) => {
-    setCurrentPage(index);
-    api?.scrollTo(0);
   };
 
   return (
@@ -90,7 +71,6 @@ export default function TeamCarousel({
             variant={selectedCategory === category ? "default" : "outline"}
             onClick={() => {
               setSelectedCategory(category);
-              setCurrentPage(0);
             }}
           >
             {category}
@@ -98,9 +78,9 @@ export default function TeamCarousel({
         ))}
       </div>
 
-      <Carousel className="w-full max-w-5xl mx-auto" setApi={setApi}>
+      <Carousel className="w-full max-w-5xl mx-auto">
         <CarouselContent>
-          {currentMembers.map((member) => (
+          {sortedMembers.map((member) => (
             <CarouselItem key={member.id} className="md:basis-1/3 lg:basis-1/3">
               <Card>
                 <CardContent className="flex aspect-square items-center justify-center p-6">
@@ -121,11 +101,11 @@ export default function TeamCarousel({
                         if (role === roleTypes.CORE) return true;
 
                         const isCommitteeLead = Object.values(
-                          roleTypes.LEAD
+                          roleTypes.LEAD,
                         ).some(
                           (leadRole) =>
                             member.mainRole === leadRole &&
-                            leadRole.includes(role.split(" ")[0])
+                            leadRole.includes(role.split(" ")[0]),
                         );
 
                         return !isCommitteeLead;
@@ -167,21 +147,6 @@ export default function TeamCarousel({
         <CarouselPrevious />
         <CarouselNext />
       </Carousel>
-
-      {totalPages > 1 && (
-        <div className="flex justify-center gap-2">
-          {Array.from({ length: totalPages }).map((_, index) => (
-            <Button
-              key={index}
-              variant={currentPage === index ? "default" : "outline"}
-              size="sm"
-              onClick={() => handlePageChange(index)}
-            >
-              {index + 1}
-            </Button>
-          ))}
-        </div>
-      )}
     </div>
   );
 }
