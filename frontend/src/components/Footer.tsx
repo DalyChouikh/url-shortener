@@ -1,7 +1,11 @@
+import { useState } from "react";
 import { FaFacebook, FaLinkedin, FaGithub, FaInstagram } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
+import ContactDialog from "./ContactDialog";
 
 export default function Footer() {
+  const [contactDialogOpen, setContactDialogOpen] = useState(false);
+
   return (
     <footer className="bg-white border-t">
       <div className="container mx-auto px-4 py-8">
@@ -50,6 +54,14 @@ export default function Footer() {
                 >
                   dscissatso@gmail.com
                 </a>
+              </li>
+              <li>
+                <button
+                  onClick={() => setContactDialogOpen(true)}
+                  className="text-gray-600 hover:text-blue-600"
+                >
+                  Contact Us
+                </button>
               </li>
             </ul>
           </div>
@@ -115,6 +127,11 @@ export default function Footer() {
             </div>
           </div>
         </div>
+
+        <ContactDialog
+          open={contactDialogOpen}
+          onOpenChange={setContactDialogOpen}
+        />
       </div>
     </footer>
   );
