@@ -12,7 +12,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { showToast } from "@/utils/toast";
-import { Loader2 } from "lucide-react";
+import { CircleAlert, Loader2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const GETFORM_ENDPOINT = import.meta.env.VITE_GETFORM_ENDPOINT;
 
@@ -21,11 +22,18 @@ interface ContactDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
+type FormErrors = {
+  name?: string;
+  email?: string;
+  message?: string;
+};
+
 export default function ContactDialog({
   open,
   onOpenChange,
 }: ContactDialogProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const [errors, setErrors] = useState<FormErrors>({});
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -37,29 +45,36 @@ export default function ContactDialog({
     return String(email)
       .toLowerCase()
       .match(
-        /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+        /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
       );
+  };
+
+  const validateForm = (): boolean => {
+    const newErrors: FormErrors = {};
+
+    if (!formData.name.trim()) {
+      newErrors.name = "Name is required";
+    }
+
+    if (!formData.email.trim()) {
+      newErrors.email = "Email is required";
+    } else if (!validateEmail(formData.email)) {
+      newErrors.email = "Please enter a valid email address";
+    }
+
+    if (!formData.message.trim()) {
+      newErrors.message = "Message is required";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
-    // Form validation
-    if (!formData.name.trim()) {
-      showToast("Please enter your name", "error");
-      setIsLoading(false);
-      return;
-    }
-
-    if (!formData.email.trim() || !validateEmail(formData.email)) {
-      showToast("Please enter a valid email address", "error");
-      setIsLoading(false);
-      return;
-    }
-
-    if (!formData.message.trim()) {
-      showToast("Please enter your message", "error");
+    if (!validateForm()) {
       setIsLoading(false);
       return;
     }
@@ -77,6 +92,7 @@ export default function ContactDialog({
       if (response.ok) {
         showToast("Message sent successfully!", "success");
         setFormData({ name: "", email: "", subject: "", message: "" });
+        setErrors({});
         onOpenChange(false);
       } else {
         throw new Error("Failed to send message");
@@ -104,12 +120,21 @@ export default function ContactDialog({
               id="name"
               name="name"
               value={formData.name}
-              onChange={(e) =>
-                setFormData({ ...formData, name: e.target.value })
-              }
+              onChange={(e) => {
+                setFormData({ ...formData, name: e.target.value });
+                if (errors.name) {
+                  setErrors({ ...errors, name: undefined });
+                }
+              }}
               placeholder="Your name"
-              required
+              className={cn(errors.name && "border-red-500")}
             />
+            {errors.name && (
+              <span className="text-sm flex items-center text-red-500">
+                <CircleAlert className="mr-2 h-4 w-4 inline" />
+                {errors.name}
+              </span>
+            )}
           </div>
           <div className="space-y-2">
             <Label htmlFor="email">Email *</Label>
@@ -118,12 +143,21 @@ export default function ContactDialog({
               type="email"
               name="email"
               value={formData.email}
-              onChange={(e) =>
-                setFormData({ ...formData, email: e.target.value })
-              }
+              onChange={(e) => {
+                setFormData({ ...formData, email: e.target.value });
+                if (errors.email) {
+                  setErrors({ ...errors, email: undefined });
+                }
+              }}
               placeholder="your.email@example.com"
-              required
+              className={cn(errors.email && "border-red-500")}
             />
+            {errors.email && (
+              <span className="text-sm flex items-center text-red-500">
+                <CircleAlert className="mr-2 h-4 w-4 inline" />
+                {errors.email}
+              </span>
+            )}
           </div>
           <div className="space-y-2">
             <Label htmlFor="subject">Subject</Label>
@@ -143,13 +177,24 @@ export default function ContactDialog({
               id="message"
               name="message"
               value={formData.message}
-              onChange={(e) =>
-                setFormData({ ...formData, message: e.target.value })
-              }
+              onChange={(e) => {
+                setFormData({ ...formData, message: e.target.value });
+                if (errors.message) {
+                  setErrors({ ...errors, message: undefined });
+                }
+              }}
               placeholder="Your message..."
-              className="min-h-[100px]"
-              required
+              className={cn(
+                "min-h-[100px]",
+                errors.message && "border-red-500",
+              )}
             />
+            {errors.message && (
+              <span className="text-sm flex items-center text-red-500">
+                <CircleAlert className="mr-2 h-4 w-4 inline" />
+                {errors.message}
+              </span>
+            )}
           </div>
           <DialogFooter>
             <Button type="submit" disabled={isLoading}>
