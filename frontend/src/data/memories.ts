@@ -7,6 +7,12 @@ export interface Memory {
 
 export const memories: Memory[] = [
   {
+    id: 10,
+    imageUrl: "/memories/secret-santa-2024.jpg",
+    title: "Secret Santa 2024/2025",
+    description: "An unforgettable day, saying goodbye to many dear family members",
+  },
+  {
     id: 1,
     imageUrl: "/memories/benzart.jpg",
     title: "Benzart 2023",
