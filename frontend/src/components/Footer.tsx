@@ -48,14 +48,6 @@ export default function Footer() {
               <li className="text-gray-600">ISSAT Sousse</li>
               <li className="text-gray-600">Tunisia</li>
               <li>
-                <a
-                  href="mailto:dscissatso@gmail.com"
-                  className="text-gray-600 hover:text-blue-600"
-                >
-                  dscissatso@gmail.com
-                </a>
-              </li>
-              <li>
                 <button
                   onClick={() => setContactDialogOpen(true)}
                   className="text-gray-600 hover:text-blue-600"
