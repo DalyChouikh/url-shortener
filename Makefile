@@ -4,7 +4,12 @@ migrate-local:
 	@goose -dir assets/migrations postgres "user=postgres password=postgres123 host=localhost sslmode=disable dbname=gdgc-issatso" up
 
 migrate-production:
-	@goose -dir assets/migrations postgres "user=[username] password=[password] host=[host] sslmode=require dbname=[dbname]" up
+	@if [ -z "$(user)" ] || [ -z "$(password)" ] || [ -z "$(host)" ] || [ -z "$(dbname)" ]; then \
+		echo "Missing database connection arguments."; \
+		echo "Usage: make migrate-production user=username password=yourpassword host=dbhost dbname=database"; \
+		exit 1; \
+	fi
+	@goose -dir assets/migrations postgres "user=$(user) password=$(password) host=$(host) sslmode=require dbname=$(dbname)" up
 
 frontend:
 	@cd frontend && npm i && npm run build
