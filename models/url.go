@@ -6,12 +6,16 @@ import (
 
 type URL struct {
 	gorm.Model
-	LongURL   string `gorm:"not null"`
-	ShortCode string `gorm:"uniqueIndex;not null"`
-	Clicks    int64  `gorm:"default:0"`
-	UserID    uint   `gorm:"not null;constraint:OnDelete:CASCADE"`
-	User      User   `gorm:"foreignKey:UserID"`
-	QRCode    string `gorm:"type:text"`
+	LongURL     string `gorm:"not null"`
+	ShortCode   string `gorm:"uniqueIndex;not null"`
+	Clicks      int64  `gorm:"default:0"`
+	UserID      uint   `gorm:"not null;constraint:OnDelete:CASCADE"`
+	User        User   `gorm:"foreignKey:UserID"`
+	QRCode      string `gorm:"type:text"`
+	Format      string `gorm:"not null;default:png"`
+	Color       string `gorm:"not null;default:#000000"`
+	Transparent bool   `gorm:"not null;default:false"`
+	Size        int    `gorm:"not null;default:150"`
 }
 
 func (URL) TableName() string {
@@ -57,5 +61,12 @@ func (r *URLRepository) UpdateURL(urlID int, userID uint, newURL string) error {
 func (r *URLRepository) GetByID(urlID int, userId uint) (*URL, error) {
 	var url URL
 	err := r.db.Where("id = ? AND user_id = ?", urlID, userId).First(&url).Error
+	return &url, err
+}
+
+func (r *URLRepository) FindExistingURL(userID uint, longURL string, format string, color string, transparent bool, size int) (*URL, error) {
+	var url URL
+	err := r.db.Where("user_id = ? AND long_url = ? AND format = ? AND color = ? AND transparent = ? AND size = ?",
+		userID, longURL, format, color, transparent, size).First(&url).Error
 	return &url, err
 }

@@ -22,7 +22,8 @@ func NewURLHandler(urlService *services.URLService) *URLHandler {
 }
 
 type ShortenRequest struct {
-	LongURL string `json:"long_url" binding:"required,url"`
+	LongURL   string                  `json:"long_url" binding:"required,url"`
+	QROptions *services.QRCodeOptions `json:"qr_options,omitempty"`
 }
 
 type ShortenResponse struct {
@@ -49,23 +50,16 @@ func (h *URLHandler) HandleShortenURL(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(c.Request.Context(), 5*time.Second)
 	defer cancel()
 
-	urls, err := h.urlService.GetUserURLs(userID)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch URLs"})
-		return
-	}
-
-	for _, url := range urls {
-		if url.LongURL == req.LongURL {
-			c.JSON(http.StatusOK, ShortenResponse{
-				ShortURL: fmt.Sprintf("%s/r/%s", h.urlService.BaseURL(), url.ShortCode),
-				QRCode:   url.QRCode,
-			})
-			return
+	// Set default options if not provided
+	if req.QROptions == nil {
+		req.QROptions = &services.QRCodeOptions{
+			Format: "png",
+			Color:  "#000000",
 		}
 	}
 
-	url, qrCode, err := h.urlService.CreateShortURL(ctx, req.LongURL, userID)
+	// No need to check for existing URLs here, the service will do it
+	url, qrCode, err := h.urlService.CreateShortURL(ctx, req.LongURL, userID, req.QROptions)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
