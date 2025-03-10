@@ -72,6 +72,7 @@ export default function Settings() {
       } else {
         showToast("Failed to delete account", "error");
       }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       showToast("Failed to delete account", "error");
     }

@@ -225,6 +225,7 @@ export default function Profile() {
       } else {
         throw new Error("Failed to delete URL");
       }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       showToast("Failed to delete URL", "error");
     }
@@ -262,6 +263,7 @@ export default function Profile() {
       } else {
         throw new Error("Failed to update URL");
       }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       showToast("Failed to update URL", "error");
     }

@@ -19,6 +19,7 @@ export default function AuthCallback() {
       try {
         await refreshUser();
         navigate("/profile");
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (error) {
         navigate("/?error=authentication_failed");
       }
