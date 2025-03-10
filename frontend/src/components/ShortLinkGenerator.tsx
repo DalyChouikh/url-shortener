@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { useState } from "react";
 import { showToast } from "@/utils/toast";
 import { Button } from "@/components/ui/button";
@@ -11,6 +12,15 @@ import {
   QrCode,
   Check,
 } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const isValidUrl = (url: string): boolean => {
   try {
@@ -28,6 +38,14 @@ export default function ShortLinkGenerator() {
   const [isLoading, setIsLoading] = useState(false);
   const [isCopying, setIsCopying] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [qrFormat, setQrFormat] = useState("png");
+  const [qrColor, setQrColor] = useState("#000000");
+  const [transparentBg, setTransparentBg] = useState(false);
+  const [qrSize, setQrSize] = useState(150);
+
+  const handleFormatChange = (format: string) => {
+    setQrFormat(format);
+  };
 
   const generateShortLink = async () => {
     if (!longUrl) {
@@ -53,7 +71,15 @@ export default function ShortLinkGenerator() {
           Accept: "application/json",
           "X-Requested-With": "XMLHttpRequest",
         },
-        body: JSON.stringify({ long_url: longUrl }),
+        body: JSON.stringify({
+          long_url: longUrl,
+          qr_options: {
+            format: qrFormat,
+            color: qrColor,
+            transparent: transparentBg,
+            size: qrSize,
+          },
+        }),
       });
 
       const data = await response.json();
@@ -61,7 +87,7 @@ export default function ShortLinkGenerator() {
       if (response.ok) {
         setShortUrl(data.short_url);
         setQrCode(data.qrcode);
-        showToast("Short link generated successfully!", "success");
+        showToast("Short link generated successfully!!", "success");
       } else {
         showToast("Failed to generate short link", "error");
       }
@@ -93,8 +119,10 @@ export default function ShortLinkGenerator() {
     try {
       setIsDownloading(true);
       const link = document.createElement("a");
-      link.href = `data:image/png;base64,${qrCode}`;
-      link.download = `qr-${shortUrl.split("/r/")[1]}.png`;
+      link.href = `data:image/${
+        qrFormat === "svg" ? "svg+xml" : "png"
+      };base64,${qrCode}`;
+      link.download = `qr-${shortUrl.split("/r/")[1]}.${qrFormat}`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -144,6 +172,68 @@ export default function ShortLinkGenerator() {
             </Button>
           </div>
 
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="qr-format">QR Code Format</Label>
+              <Select value={qrFormat} onValueChange={handleFormatChange}>
+                <SelectTrigger id="qr-format">
+                  <SelectValue placeholder="Select Format" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="png">PNG Image</SelectItem>
+                  <SelectItem value="svg">SVG Vector</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="qr-color">QR Code Color</Label>
+              <div className="flex gap-2">
+                <Input
+                  id="qr-color"
+                  type="color"
+                  value={qrColor}
+                  onChange={(e) => setQrColor(e.target.value)}
+                  className="w-12 h-10 p-0 cursor-pointer"
+                />
+                <Input
+                  type="text"
+                  value={qrColor}
+                  onChange={(e) => setQrColor(e.target.value)}
+                  className="flex-1"
+                  placeholder="#000000"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="qr-size">QR Code Size (px)</Label>
+            <div className="flex items-center gap-2">
+              <Input
+                id="qr-size"
+                type="number"
+                min="50"
+                max="500"
+                value={qrSize}
+                onChange={(e) => setQrSize(parseInt(e.target.value) || 150)}
+                className="flex-1"
+              />
+              <span className="text-muted-foreground text-sm">
+                Square dimensions
+              </span>
+            </div>
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="transparent-bg"
+              checked={transparentBg}
+              onCheckedChange={(checked) => setTransparentBg(!!checked)}
+            />
+            <Label htmlFor="transparent-bg">Transparent background</Label>
+          </div>
+
           {shortUrl && (
             <div className="space-y-6 rounded-lg border p-6">
               <div className="space-y-4">
@@ -185,7 +275,9 @@ export default function ShortLinkGenerator() {
                   <div className="flex flex-col items-center gap-4">
                     <div className="p-4 bg-white rounded-xl shadow-sm">
                       <img
-                        src={`data:image/png;base64,${qrCode}`}
+                        src={`data:image/${
+                          qrFormat === "svg" ? "svg+xml" : "png"
+                        };base64,${qrCode}`}
                         alt="QR Code"
                         className="w-48 h-48"
                       />

@@ -47,6 +47,9 @@ interface URL {
   ShortCode: string;
   Clicks: number;
   QRCode: string;
+  Format: string;
+  Color: string;
+  Size: number;
 }
 
 const URLCard = ({
@@ -63,8 +66,8 @@ const URLCard = ({
   onCopy: (url: string) => void;
   onEdit: (url: URL) => void;
   onDelete: (id: number) => void;
-  onQRClick: (qr: string) => void;
-  onQRDownload: (qr: string, code: string) => void;
+  onQRClick: (qr: string, format: string) => void;
+  onQRDownload: (qr: string, code: string, format: string) => void;
   copyingId: number | null;
   downloadingId: number | null;
 }) => (
@@ -140,15 +143,19 @@ const URLCard = ({
         {url.QRCode && (
           <div className="flex items-center gap-2">
             <img
-              src={`data:image/png;base64,${url.QRCode}`}
+              src={`data:image/${
+                url.Format === "svg" ? "svg+xml" : "png"
+              };base64,${url.QRCode}`}
               alt="QR Code"
               className="w-12 h-12 cursor-pointer object-contain rounded-md"
-              onClick={() => onQRClick(url.QRCode)}
+              onClick={() => onQRClick(url.QRCode, url.Format)}
             />
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => onQRDownload(url.QRCode, url.ShortCode)}
+              onClick={() =>
+                onQRDownload(url.QRCode, url.ShortCode, url.Format)
+              }
               disabled={downloadingId === url.ID}
             >
               {downloadingId === url.ID ? (
@@ -178,6 +185,7 @@ export default function Profile() {
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
   const [copyingId, setCopyingId] = useState<number | null>(null);
   const [downloadingId, setDownloadingId] = useState<number | null>(null);
+  const [selectedQRFormat, setSelectedQRFormat] = useState<string>("png");
 
   const copyToClipboard = async (text: string, urlId: number) => {
     try {
@@ -191,12 +199,19 @@ export default function Profile() {
     }
   };
 
-  const downloadQRCode = (qrCode: string, shortCode: string, urlId: number) => {
+  const downloadQRCode = (
+    qrCode: string,
+    shortCode: string,
+    format: string,
+    urlId: number
+  ) => {
     try {
       setDownloadingId(urlId);
       const link = document.createElement("a");
-      link.href = `data:image/png;base64,${qrCode}`;
-      link.download = `qr-${shortCode}.png`;
+      link.href = `data:image/${
+        format === "svg" ? "svg+xml" : "png"
+      };base64,${qrCode}`;
+      link.download = `qr-${shortCode}.${format}`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -225,7 +240,7 @@ export default function Profile() {
       } else {
         throw new Error("Failed to delete URL");
       }
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       showToast("Failed to delete URL", "error");
     }
@@ -263,7 +278,7 @@ export default function Profile() {
       } else {
         throw new Error("Failed to update URL");
       }
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       showToast("Failed to update URL", "error");
     }
@@ -462,10 +477,15 @@ export default function Profile() {
                             {url.QRCode && (
                               <>
                                 <img
-                                  src={`data:image/png;base64,${url.QRCode}`}
+                                  src={`data:image/${
+                                    url.Format === "svg" ? "svg+xml" : "png"
+                                  };base64,${url.QRCode}`}
                                   alt="QR Code"
                                   className="w-16 h-16 cursor-pointer hover:scale-105 transition-transform"
-                                  onClick={() => setSelectedQR(url.QRCode)}
+                                  onClick={() => {
+                                    setSelectedQR(url.QRCode);
+                                    setSelectedQRFormat(url.Format);
+                                  }}
                                 />
                                 <Button
                                   variant="ghost"
@@ -474,6 +494,7 @@ export default function Profile() {
                                     downloadQRCode(
                                       url.QRCode,
                                       url.ShortCode,
+                                      url.Format,
                                       url.ID
                                     )
                                   }
@@ -524,9 +545,12 @@ export default function Profile() {
                     onCopy={(text) => copyToClipboard(text, url.ID)}
                     onEdit={handleEdit}
                     onDelete={(id) => setUrlToDelete(id)}
-                    onQRClick={(qr) => setSelectedQR(qr)}
-                    onQRDownload={(qr, code) =>
-                      downloadQRCode(qr, code, url.ID)
+                    onQRClick={(qr, format) => {
+                      setSelectedQR(qr);
+                      setSelectedQRFormat(format);
+                    }}
+                    onQRDownload={(qr, code, format) =>
+                      downloadQRCode(qr, code, format, url.ID)
                     }
                     copyingId={copyingId}
                     downloadingId={downloadingId}
@@ -594,7 +618,9 @@ export default function Profile() {
               onClick={(e) => e.stopPropagation()}
             >
               <img
-                src={`data:image/png;base64,${selectedQR}`}
+                src={`data:image/${
+                  selectedQRFormat === "svg" ? "svg+xml" : "png"
+                };base64,${selectedQR}`}
                 alt="QR Code Large"
                 className="w-64 h-64"
               />
