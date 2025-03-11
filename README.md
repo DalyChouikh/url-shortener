@@ -1,5 +1,5 @@
 
-#  GDG ISSATSo URL Shortener
+#  GDG on Campus ISSATSo URL Shortener
 
   
 
