@@ -7,7 +7,7 @@
 
 <img  src="frontend/public/favicon.png"  alt="GDG ISSATSo Logo"  width="120"  height="120">
 
-<h3>Powerful URL Shortening Service Built for Google Developer Group ISSATSo</h3>
+<h3>Powerful URL Shortening Service Built for Google Developer Group on Campus ISSATSo</h3>
 
 </div>
 
@@ -312,7 +312,7 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
   
 
-- Google Developer Groups for their support and resources
+- Google Developer Groups on Campus ISSATSo for their support and resources
 
   
 
