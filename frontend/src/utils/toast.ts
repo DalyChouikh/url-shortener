@@ -1,33 +1,37 @@
-import { Bounce, toast, ToastOptions } from "react-toastify";
+import { toast } from "@/hooks/useToast";
 
-const toastOptions: ToastOptions = {
-  position: "bottom-right",
-  autoClose: 5000,
-  hideProgressBar: false,
-  closeOnClick: false,
-  pauseOnHover: true,
-  draggable: true,
-  progress: undefined,
-  theme: "light",
-  transition: Bounce,
-};
+type ToastType = "success" | "error" | "info" | "warning";
 
-export function showToast(
-  message: string,
-  type: "error" | "success" | "warning" | "info",
-): void {
+export const showToast = (message: string, type: ToastType = "info") => {
   switch (type) {
-    case "error":
-      toast.error(message, toastOptions);
-      break;
     case "success":
-      toast.success(message, toastOptions);
+      toast({
+        title: "Success",
+        description: message,
+        variant: "default",
+      });
+      break;
+    case "error":
+      toast({
+        title: "Error",
+        description: message,
+        variant: "destructive",
+      });
       break;
     case "warning":
-      toast.warning(message, toastOptions);
+      toast({
+        title: "Warning",
+        description: message,
+        variant: "default",
+      });
       break;
     case "info":
-      toast.info(message, toastOptions);
+    default:
+      toast({
+        title: "Info",
+        description: message,
+        variant: "default",
+      });
       break;
   }
-}
+};
