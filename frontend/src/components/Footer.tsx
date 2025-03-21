@@ -106,17 +106,6 @@ export default function Footer() {
               © {new Date().getFullYear()} Google Developer Groups on Campus
               ISSATSo. All rights reserved.
             </p>
-            <div className="flex space-x-6 mt-4 md:mt-0">
-              <a href="#" className="text-sm text-gray-600 hover:text-blue-600">
-                Privacy Policy
-              </a>
-              <a href="#" className="text-sm text-gray-600 hover:text-blue-600">
-                Terms of Service
-              </a>
-              <a href="#" className="text-sm text-gray-600 hover:text-blue-600">
-                Cookie Policy
-              </a>
-            </div>
           </div>
         </div>
 
