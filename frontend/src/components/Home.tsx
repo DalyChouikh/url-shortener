@@ -96,9 +96,8 @@ export default function Home() {
   ];
 
   const stats = [
-    { number: 500, label: "Active Members", hasPlus: true },
-    { number: 50, label: "Events Organized", hasPlus: true },
-    { number: 1000, label: "URLs Shortened", hasPlus: true },
+    { number: 50, label: "Community Members", hasPlus: true },
+    { number: 25, label: "Events Organized", hasPlus: true },
     { number: "24/7", label: "Community Support", hasPlus: false },
   ];
 
