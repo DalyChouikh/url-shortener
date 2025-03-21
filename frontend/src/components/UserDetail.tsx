@@ -65,12 +65,83 @@ const formatDate = (dateString: string | null | undefined) => {
           year: "numeric",
           month: "long",
           day: "numeric",
-          timeZone: "UTC", // Force UTC timezone
+          timeZone: "UTC",
         });
   } catch (e) {
     return "Invalid";
   }
 };
+
+const URLCard = ({
+  url,
+  onCopy,
+  copyingId,
+}: {
+  url: URL;
+  onCopy: (url: string, id: number) => void;
+  copyingId: number | null;
+}) => (
+  <Card className="mb-4">
+    <CardContent className="pt-6 space-y-4">
+      {/* Header with date */}
+      <div className="flex justify-between items-start">
+        <p className="text-sm text-muted-foreground">
+          {formatDate(url.CreatedAt)}
+        </p>
+        <Badge className="bg-blue-100 text-blue-800">{url.Clicks} clicks</Badge>
+      </div>
+
+      {/* Long URL */}
+      <div>
+        <p className="text-sm text-muted-foreground">Original URL</p>
+        <div className="truncate">
+          <a
+            href={url.LongURL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-primary hover:underline text-sm"
+          >
+            {url.LongURL}
+          </a>
+        </div>
+      </div>
+
+      {/* Short URL section */}
+      <div>
+        <p className="text-sm text-muted-foreground">Short URL</p>
+        <div className="flex items-center gap-2 bg-muted/50 rounded-md p-2">
+          <div className="min-w-0 flex-1">
+            <div className="truncate">
+              <a
+                href={`/r/${url.ShortCode}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary hover:underline text-sm"
+              >
+                {`${window.location.origin}/r/${url.ShortCode}`}
+              </a>
+            </div>
+          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() =>
+              onCopy(`${window.location.origin}/r/${url.ShortCode}`, url.ID)
+            }
+            className="shrink-0"
+            disabled={copyingId === url.ID}
+          >
+            {copyingId === url.ID ? (
+              <Check className="h-4 w-4 text-green-500" />
+            ) : (
+              <Copy className="h-4 w-4" />
+            )}
+          </Button>
+        </div>
+      </div>
+    </CardContent>
+  </Card>
+);
 
 export default function UserDetail() {
   const { userId } = useParams();
@@ -232,7 +303,7 @@ export default function UserDetail() {
           </div>
         </div>
         <CardContent className="pt-16 pb-6">
-          <div className="flex justify-between items-start">
+          <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
             <div>
               <h2 className="text-2xl font-bold">{user.name}</h2>
               <p className="text-muted-foreground">{user.email}</p>
@@ -242,7 +313,7 @@ export default function UserDetail() {
                 </Badge>
               </div>
             </div>
-            <div className="text-right text-sm text-muted-foreground">
+            <div className="text-left sm:text-right text-sm text-muted-foreground mt-2 sm:mt-0">
               <p>Member since: {formatDate(user.createdAt)}</p>
               <p>Last login: {formatDate(user.lastLoginAt)}</p>
             </div>
@@ -251,7 +322,7 @@ export default function UserDetail() {
       </Card>
 
       <Tabs defaultValue="urls" className="w-full">
-        <TabsList className="mb-4">
+        <TabsList className="w-full overflow-x-auto">
           <TabsTrigger value="urls">URLs</TabsTrigger>
           <TabsTrigger value="activity">Activity Log</TabsTrigger>
           <TabsTrigger value="settings">Settings</TabsTrigger>
@@ -277,70 +348,88 @@ export default function UserDetail() {
                 </div>
               ) : (
                 <>
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="w-[180px]">Created At</TableHead>
-                        <TableHead>Original URL</TableHead>
-                        <TableHead>Short URL</TableHead>
-                        <TableHead className="text-right">Clicks</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {urls.map((url) => (
-                        <TableRow key={url.ID}>
-                          <TableCell className="font-medium">
-                            {formatDate(url.CreatedAt)}
-                          </TableCell>
-                          <TableCell className="max-w-[300px]">
-                            <div className="truncate">
-                              <a
-                                href={url.LongURL}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-primary hover:underline"
-                              >
-                                {url.LongURL}
-                              </a>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-2">
-                              <a
-                                href={`/r/${url.ShortCode}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-primary hover:underline truncate"
-                              >
-                                {`${window.location.origin}/r/${url.ShortCode}`}
-                              </a>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() =>
-                                  copyToClipboard(
-                                    `${window.location.origin}/r/${url.ShortCode}`,
-                                    url.ID
-                                  )
-                                }
-                                className="shrink-0"
-                                disabled={copyingId === url.ID}
-                              >
-                                {copyingId === url.ID ? (
-                                  <Check className="h-4 w-4 text-green-500" />
-                                ) : (
-                                  <Copy className="h-4 w-4" />
-                                )}
-                              </Button>
-                            </div>
-                          </TableCell>
-                          <TableCell className="text-right font-medium">
-                            {url.Clicks}
-                          </TableCell>
+                  {/* Desktop Table View */}
+                  <div className="hidden md:block">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="w-[180px]">
+                            Created At
+                          </TableHead>
+                          <TableHead>Original URL</TableHead>
+                          <TableHead>Short URL</TableHead>
+                          <TableHead className="text-right">Clicks</TableHead>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                      </TableHeader>
+                      <TableBody>
+                        {urls.map((url) => (
+                          <TableRow key={url.ID}>
+                            <TableCell className="font-medium">
+                              {formatDate(url.CreatedAt)}
+                            </TableCell>
+                            <TableCell className="max-w-[300px]">
+                              <div className="truncate">
+                                <a
+                                  href={url.LongURL}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-primary hover:underline"
+                                >
+                                  {url.LongURL}
+                                </a>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-2">
+                                <a
+                                  href={`/r/${url.ShortCode}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-primary hover:underline truncate"
+                                >
+                                  {`${window.location.origin}/r/${url.ShortCode}`}
+                                </a>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() =>
+                                    copyToClipboard(
+                                      `${window.location.origin}/r/${url.ShortCode}`,
+                                      url.ID
+                                    )
+                                  }
+                                  className="shrink-0"
+                                  disabled={copyingId === url.ID}
+                                >
+                                  {copyingId === url.ID ? (
+                                    <Check className="h-4 w-4 text-green-500" />
+                                  ) : (
+                                    <Copy className="h-4 w-4" />
+                                  )}
+                                </Button>
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-right font-medium">
+                              {url.Clicks}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+
+                  {/* Mobile Card View */}
+                  <div className="md:hidden space-y-4">
+                    {urls.map((url) => (
+                      <URLCard
+                        key={url.ID}
+                        url={url}
+                        onCopy={copyToClipboard}
+                        copyingId={copyingId}
+                      />
+                    ))}
+                  </div>
+
                   <PaginationControls
                     currentPage={pagination.currentPage}
                     pageSize={pagination.pageSize}

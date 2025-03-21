@@ -60,12 +60,82 @@ const formatDate = (dateString: string | null | undefined) => {
     return isNaN(date.getTime())
       ? "Invalid"
       : new Date(date.getTime()).toLocaleString(undefined, {
-          timeZone: "UTC", // Force UTC timezone
+          timeZone: "UTC",
         });
   } catch (e) {
     return "Invalid";
   }
 };
+
+const UserCard = ({
+  user: u,
+  currentUser,
+  onRoleChange,
+  onUserClick,
+  getRoleBadgeColor,
+  formatRoleName,
+  formatDate,
+}: {
+  user: User;
+  currentUser: User | null;
+  onRoleChange: (userId: number, newRole: string) => void;
+  onUserClick: (userId: number) => void;
+  getRoleBadgeColor: (role: string) => string;
+  formatRoleName: (role: string) => string;
+  formatDate: (date: string | null | undefined) => string;
+}) => (
+  <Card className="mb-4" onClick={() => onUserClick(u.id)}>
+    <CardContent className="pt-6 space-y-4">
+      {/* User header with image and name */}
+      <div className="flex items-center gap-3">
+        <img src={u.picture} alt={u.name} className="w-10 h-10 rounded-full" />
+        <div className="min-w-0 flex-1">
+          <p className="font-medium truncate">{u.name}</p>
+          <p className="text-sm text-muted-foreground truncate">{u.email}</p>
+        </div>
+      </div>
+
+      {/* Role information */}
+      <div className="flex justify-between items-center">
+        <div>
+          <p className="text-sm text-muted-foreground">Current Role</p>
+          <Badge className={getRoleBadgeColor(u.role)}>
+            {formatRoleName(u.role)}
+          </Badge>
+        </div>
+        {currentUser?.id !== u.id && u.role !== "GDGC_LEAD" && (
+          <div onClick={(e) => e.stopPropagation()}>
+            <Select
+              value={u.role}
+              onValueChange={(value) => onRoleChange(u.id, value)}
+            >
+              <SelectTrigger className="w-[150px]">
+                <SelectValue placeholder="Select a role" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="CORE_TEAM">Core Team</SelectItem>
+                <SelectItem value="COMMUNITY">Community</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+        {currentUser?.id !== u.id &&
+          currentUser?.role !== "SUPER_ADMIN" &&
+          u.role === "GDGC_LEAD" && (
+            <span className="text-sm text-muted-foreground">
+              Cannot modify leader role
+            </span>
+          )}
+      </div>
+
+      {/* Last login info */}
+      <div>
+        <p className="text-sm text-muted-foreground">Last Login</p>
+        <p className="text-sm">{formatDate(u.lastLoginAt)}</p>
+      </div>
+    </CardContent>
+  </Card>
+);
 
 export default function LeaderDashboard() {
   const { user } = useAuth();
@@ -192,73 +262,92 @@ export default function LeaderDashboard() {
             </div>
           ) : (
             <>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>User</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Current Role</TableHead>
-                    <TableHead>Change Role</TableHead>
-                    <TableHead>Last Login</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {users.map((u) => (
-                    <TableRow
-                      key={u.id}
-                      className="cursor-pointer hover:bg-muted/50"
-                      onClick={() => handleUserClick(u.id)}
-                    >
-                      <TableCell className="flex items-center gap-2">
-                        <img
-                          src={u.picture}
-                          alt={u.name}
-                          className="w-8 h-8 rounded-full"
-                        />
-                        <span>{u.name}</span>
-                      </TableCell>
-                      <TableCell>{u.email}</TableCell>
-                      <TableCell>
-                        <Badge className={getRoleBadgeColor(u.role)}>
-                          {formatRoleName(u.role)}
-                        </Badge>
-                      </TableCell>
-                      <TableCell onClick={(e) => e.stopPropagation()}>
-                        {user?.id !== u.id &&
-                          u.role !== "GDGC_LEAD" && ( // Can't change own role or another leader's role
-                            <Select
-                              value={u.role}
-                              onValueChange={(value) =>
-                                handleRoleChange(u.id, value)
-                              }
-                            >
-                              <SelectTrigger className="w-[180px]">
-                                <SelectValue placeholder="Select a role" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {/* GDG Lead can only assign Core Team, Community or GDGC Lead */}
-                                <SelectItem value="CORE_TEAM">
-                                  Core Team
-                                </SelectItem>
-                                <SelectItem value="COMMUNITY">
-                                  Community
-                                </SelectItem>
-                              </SelectContent>
-                            </Select>
-                          )}
-                        {user?.id !== u.id &&
-                          user?.role !== "SUPER_ADMIN" &&
-                          u.role === "GDGC_LEAD" && (
-                            <span className="text-sm text-muted-foreground">
-                              Cannot modify leader role
-                            </span>
-                          )}
-                      </TableCell>
-                      <TableCell>{formatDate(u.lastLoginAt)}</TableCell>
+              {/* Desktop Table View */}
+              <div className="hidden md:block">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>User</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Current Role</TableHead>
+                      <TableHead>Change Role</TableHead>
+                      <TableHead>Last Login</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {users.map((u) => (
+                      <TableRow
+                        key={u.id}
+                        className="cursor-pointer hover:bg-muted/50"
+                        onClick={() => handleUserClick(u.id)}
+                      >
+                        <TableCell className="flex items-center gap-2">
+                          <img
+                            src={u.picture}
+                            alt={u.name}
+                            className="w-8 h-8 rounded-full"
+                          />
+                          <span>{u.name}</span>
+                        </TableCell>
+                        <TableCell>{u.email}</TableCell>
+                        <TableCell>
+                          <Badge className={getRoleBadgeColor(u.role)}>
+                            {formatRoleName(u.role)}
+                          </Badge>
+                        </TableCell>
+                        <TableCell onClick={(e) => e.stopPropagation()}>
+                          {user?.id !== u.id &&
+                            u.role !== "GDGC_LEAD" && ( // Can't change own role or another leader's role
+                              <Select
+                                value={u.role}
+                                onValueChange={(value) =>
+                                  handleRoleChange(u.id, value)
+                                }
+                              >
+                                <SelectTrigger className="w-[180px]">
+                                  <SelectValue placeholder="Select a role" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {/* GDG Lead can only assign Core Team, Community or GDGC Lead */}
+                                  <SelectItem value="CORE_TEAM">
+                                    Core Team
+                                  </SelectItem>
+                                  <SelectItem value="COMMUNITY">
+                                    Community
+                                  </SelectItem>
+                                </SelectContent>
+                              </Select>
+                            )}
+                          {user?.id !== u.id &&
+                            user?.role !== "SUPER_ADMIN" &&
+                            u.role === "GDGC_LEAD" && (
+                              <span className="text-sm text-muted-foreground">
+                                Cannot modify leader role
+                              </span>
+                            )}
+                        </TableCell>
+                        <TableCell>{formatDate(u.lastLoginAt)}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+
+              {/* Mobile Card View */}
+              <div className="md:hidden space-y-4">
+                {users.map((u) => (
+                  <UserCard
+                    key={u.id}
+                    user={u}
+                    currentUser={user}
+                    onRoleChange={handleRoleChange}
+                    onUserClick={handleUserClick}
+                    getRoleBadgeColor={getRoleBadgeColor}
+                    formatRoleName={formatRoleName}
+                    formatDate={formatDate}
+                  />
+                ))}
+              </div>
 
               <PaginationControls
                 currentPage={pagination.currentPage}
