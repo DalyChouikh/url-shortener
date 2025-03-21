@@ -6,6 +6,8 @@ import (
 	"sync"
 	"time"
 
+	"io/fs"
+
 	"github.com/DalyChouikh/url-shortener/config"
 	"github.com/DalyChouikh/url-shortener/frontend"
 	"github.com/DalyChouikh/url-shortener/handlers"
@@ -14,7 +16,6 @@ import (
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/time/rate"
-	"io/fs"
 )
 
 var limiters = make(map[string]*rate.Limiter)
@@ -113,11 +114,39 @@ func SetupRoutes(urlHandler handlers.URLHandler, authHandler handlers.AuthHandle
 	api.Use(middleware.AjaxRequired())
 	api.Use(rateLimitMiddleware())
 	{
-		api.POST("/shorten", urlHandler.HandleShortenURL)
-		api.GET("/urls", urlHandler.HandleGetUserURLs)
-		api.DELETE("/urls/:id", urlHandler.HandleDeleteURL)
-		api.PATCH("/urls/:id", urlHandler.HandleUpdateURL)
-		api.GET("/urls/:id", urlHandler.HandleGetURLById)
+		// URL shortener routes - restricted to core team members and above
+		urlGroup := api.Group("")
+		urlGroup.Use(middleware.CoreTeamOrAbove(authHandler.AuthService))
+		{
+			urlGroup.POST("/shorten", urlHandler.HandleShortenURL)
+			urlGroup.GET("/urls", urlHandler.HandleGetUserURLs)
+			urlGroup.DELETE("/urls/:id", urlHandler.HandleDeleteURL)
+			urlGroup.PATCH("/urls/:id", urlHandler.HandleUpdateURL)
+			urlGroup.GET("/urls/:id", urlHandler.HandleGetURLById)
+		}
+
+		// User management routes - admin only
+		adminGroup := api.Group("/admin")
+		adminGroup.Use(middleware.AdminOnly(authHandler.AuthService))
+		{
+			adminGroup.GET("/users", authHandler.HandleGetAllUsers)
+			adminGroup.PATCH("/users/:id/role", authHandler.HandleUpdateUserRole)
+			adminGroup.GET("/users/:id", authHandler.HandleGetUserDetail)
+			adminGroup.GET("/users/:id/urls", authHandler.HandleGetUserURLs)
+		}
+
+		// User management routes - admin or lead only
+		leaderGroup := api.Group("/leader")
+		leaderGroup.Use(middleware.AdminOrLeadOnly(authHandler.AuthService))
+		{
+			// Leaders can manage core team members but not other leaders
+			leaderGroup.GET("/users", authHandler.HandleGetLeaderUsers)
+			leaderGroup.PATCH("/users/:id/role", authHandler.HandleUpdateLeaderRole)
+			leaderGroup.GET("/users/:id", authHandler.HandleGetUserDetail)
+			leaderGroup.GET("/users/:id/urls", authHandler.HandleGetUserURLs)
+		}
+
+		// User account management - any authenticated user
 		api.DELETE("/users/:id", authHandler.HandleDeleteUser)
 	}
 

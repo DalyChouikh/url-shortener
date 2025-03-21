@@ -53,6 +53,7 @@ func run() error {
 		cfg.OAuth.GoogleClientSecret,
 		cfg.BaseURL+"/auth/callback",
 		userRepo,
+		urlRepo,
 	)
 
 	urlHandler := handlers.NewURLHandler(urlService)

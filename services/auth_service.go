@@ -15,6 +15,7 @@ import (
 type AuthService struct {
 	config   *oauth2.Config
 	userRepo *models.UserRepository
+	urlRepo  *models.URLRepository
 }
 
 type GoogleUser struct {
@@ -25,7 +26,7 @@ type GoogleUser struct {
 	Picture       string `json:"picture"`
 }
 
-func NewAuthService(clientID, clientSecret, redirectURL string, userRepo *models.UserRepository) *AuthService {
+func NewAuthService(clientID, clientSecret, redirectURL string, userRepo *models.UserRepository, urlRepo *models.URLRepository) *AuthService {
 	config := &oauth2.Config{
 		ClientID:     clientID,
 		ClientSecret: clientSecret,
@@ -40,6 +41,7 @@ func NewAuthService(clientID, clientSecret, redirectURL string, userRepo *models
 	return &AuthService{
 		config:   config,
 		userRepo: userRepo,
+		urlRepo:  urlRepo,
 	}
 }
 
@@ -103,4 +105,22 @@ func (s *AuthService) GetUserByID(userID uint) (*models.User, error) {
 
 func (s *AuthService) DeleteUser(userId uint) error {
 	return s.userRepo.DeleteUser(userId)
+}
+
+func (s *AuthService) GetAllUsers() ([]models.User, error) {
+	return s.userRepo.GetAllUsers()
+}
+
+func (s *AuthService) UpdateUserRole(userID uint, role models.Role) error {
+	return s.userRepo.UpdateUserRole(userID, role)
+}
+
+func (s *AuthService) GetPaginatedUsers(page, pageSize int) ([]models.User, int64, error) {
+	return s.userRepo.GetPaginatedUsers(page, pageSize)
+}
+
+// GetUserURLsForAdmin gets URLs created by a specific user (for admin/leader use)
+func (s *AuthService) GetUserURLsForAdmin(userID uint, page, pageSize int) ([]map[string]interface{}, int64, error) {
+	// Pass to URL repository to get the data
+	return s.urlRepo.GetPaginatedUserURLsForAdmin(userID, page, pageSize)
 }
