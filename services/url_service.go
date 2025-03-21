@@ -21,10 +21,10 @@ import (
 )
 
 type QRCodeOptions struct {
-	Format      string 
-	Color       string 
-	Transparent bool   
-	Size        int    
+	Format      string
+	Color       string
+	Transparent bool
+	Size        int
 }
 
 type URLService struct {
@@ -95,6 +95,10 @@ func (s *URLService) GetLongURL(shortCode string) (string, error) {
 
 func (s *URLService) GetUserURLs(userID uint) ([]models.URL, error) {
 	return s.repo.GetUserURLs(userID)
+}
+
+func (s *URLService) GetPaginatedUserURLs(userID uint, page, pageSize int) ([]models.URL, int64, error) {
+	return s.repo.GetPaginatedUserURLs(userID, page, pageSize)
 }
 
 func (s *URLService) UpdateURL(urlID int, userId uint, newURL string) error {

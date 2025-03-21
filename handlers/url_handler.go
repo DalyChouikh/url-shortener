@@ -94,13 +94,31 @@ func (h *URLHandler) HandleGetUserURLs(c *gin.Context) {
 	session := sessions.Default(c)
 	userID := session.Get("user_id").(uint)
 
-	urls, err := h.urlService.GetUserURLs(userID)
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	pageSize, _ := strconv.Atoi(c.DefaultQuery("pageSize", "10"))
+
+	if page < 1 {
+		page = 1
+	}
+	if pageSize < 1 || pageSize > 100 {
+		pageSize = 10
+	}
+
+	urls, total, err := h.urlService.GetPaginatedUserURLs(userID, page, pageSize)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch URLs"})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"urls": urls})
+	c.JSON(http.StatusOK, gin.H{
+		"urls": urls,
+		"pagination": gin.H{
+			"currentPage": page,
+			"pageSize":    pageSize,
+			"totalItems":  total,
+			"totalPages":  (total + int64(pageSize) - 1) / int64(pageSize),
+		},
+	})
 }
 
 func (h *URLHandler) HandleDeleteURL(c *gin.Context) {

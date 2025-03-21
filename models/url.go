@@ -70,3 +70,54 @@ func (r *URLRepository) FindExistingURL(userID uint, longURL string, format stri
 		userID, longURL, format, color, transparent, size).First(&url).Error
 	return &url, err
 }
+
+func (r *URLRepository) GetPaginatedUserURLs(userID uint, page, pageSize int) ([]URL, int64, error) {
+	var urls []URL
+	var total int64
+
+	offset := (page - 1) * pageSize
+
+	// Get total count first
+	if err := r.db.Model(&URL{}).Where("user_id = ?", userID).Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	// Get paginated URLs
+	if err := r.db.Where("user_id = ?", userID).Offset(offset).Limit(pageSize).Find(&urls).Error; err != nil {
+		return nil, 0, err
+	}
+
+	return urls, total, nil
+}
+
+// GetPaginatedUserURLsForAdmin fetches URLs for a specific user (for admin/leader use)
+func (r *URLRepository) GetPaginatedUserURLsForAdmin(userID uint, page, pageSize int) ([]map[string]interface{}, int64, error) {
+	var urls []URL
+	var total int64
+	var results []map[string]interface{}
+
+	offset := (page - 1) * pageSize
+
+	// Get total count
+	if err := r.db.Model(&URL{}).Where("user_id = ?", userID).Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	// Get paginated URLs
+	if err := r.db.Where("user_id = ?", userID).Offset(offset).Limit(pageSize).Find(&urls).Error; err != nil {
+		return nil, 0, err
+	}
+
+	// Format the result
+	for _, url := range urls {
+		results = append(results, map[string]interface{}{
+			"ID":        url.ID,
+			"CreatedAt": url.CreatedAt,
+			"LongURL":   url.LongURL,
+			"ShortCode": url.ShortCode,
+			"Clicks":    url.Clicks,
+		})
+	}
+
+	return results, total, nil
+}
