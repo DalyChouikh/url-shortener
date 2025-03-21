@@ -7,6 +7,7 @@ interface User {
   picture: string;
   createdAt: string;
   lastLogin: string;
+  role: string;
 }
 
 interface AuthContextType {
@@ -14,6 +15,7 @@ interface AuthContextType {
   loading: boolean;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
+  hasPermission: (roles: string[]) => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -81,9 +83,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  // Helper function to check if the user has one of the required roles
+  const hasPermission = (roles: string[]): boolean => {
+    if (!user) return false;
+    return roles.includes(user.role);
+  };
+
   return (
     <AuthContext.Provider
-      value={{ user, loading, logout, refreshUser: fetchUser }}
+      value={{ user, loading, logout, refreshUser: fetchUser, hasPermission }}
     >
       {children}
     </AuthContext.Provider>

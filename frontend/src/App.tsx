@@ -1,94 +1,83 @@
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  Navigate,
-  useLocation,
-} from "react-router-dom";
-import Navbar from "@/components/Navbar";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Toaster } from "@/components/ui/toaster";
+import { AuthProvider } from "@/contexts/AuthContext";
+import ProtectedRoute from "@/routes/ProtectedRoute";
+import Layout from "@/components/Layout";
 import Home from "@/components/Home";
-import ShortLinkGenerator from "@/components/ShortLinkGenerator";
-import Profile from "@/components/Profile";
-import AuthCallback from "@/components/AuthCallback";
-import { AuthProvider, useAuth } from "@/contexts/AuthContext";
-import { ToastContainer } from "react-toastify";
-import Error from "@/components/Error";
-import Settings from "@/components/Settings";
-import Footer from "@/components/Footer";
 import About from "@/components/About";
-
-function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth();
-  const location = useLocation();
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  if (!user) {
-    return <Navigate to="/" state={{ from: location.pathname }} replace />;
-  }
-
-  return <>{children}</>;
-}
-
-function AppRoutes() {
-  return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      <Navbar />
-      <div className="flex-grow">
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/callback" element={<AuthCallback />} />
-          <Route
-            path="/shorten"
-            element={
-              <ProtectedRoute>
-                <div className="container flex justify-center items-center mx-auto px-4 py-8">
-                  <ShortLinkGenerator />
-                </div>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/profile"
-            element={
-              <ProtectedRoute>
-                <Profile />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/settings"
-            element={
-              <ProtectedRoute>
-                <Settings />
-              </ProtectedRoute>
-            }
-          />
-          <Route path="/error" element={<Error />} />
-          <Route
-            path="*"
-            element={<Navigate to="/error?error=not_found" replace />}
-          />
-        </Routes>
-      </div>
-      <Footer />
-    </div>
-  );
-}
+import AuthCallback from "@/components/AuthCallback";
+import Profile from "@/components/Profile";
+import AdminDashboard from "@/components/AdminDashboard";
+import LeaderDashboard from "@/components/LeaderDashboard";
+import Unauthorized from "@/components/Unauthorized";
+import Settings from "@/components/Settings";
+import ShortLinkGenerator from "./components/ShortLinkGenerator";
+import URLList from "@/components/URLList";
+import NotFound from "@/components/NotFound";
+import UserDetail from "@/components/UserDetail";
 
 function App() {
   return (
-    <>
-      <Router>
-        <AuthProvider>
-          <AppRoutes />
-        </AuthProvider>
-      </Router>
-      <ToastContainer limit={3} />
-    </>
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Layout />}>
+            <Route index element={<Home />} />
+            <Route path="about" element={<About />} />
+            <Route path="callback" element={<AuthCallback />} />
+            <Route path="unauthorized" element={<Unauthorized />} />
+
+            {/* URL shortener - protected for Core Team and above */}
+            <Route
+              element={
+                <ProtectedRoute
+                  allowedRoles={["SUPER_ADMIN", "GDGC_LEAD", "CORE_TEAM"]}
+                />
+              }
+            >
+              <Route path="shorten" element={<ShortLinkGenerator />} />
+              <Route path="urls" element={<URLList />} />
+            </Route>
+
+            {/* User profile - accessible to all authenticated users */}
+            <Route
+              element={
+                <ProtectedRoute
+                  allowedRoles={[
+                    "SUPER_ADMIN",
+                    "GDGC_LEAD",
+                    "CORE_TEAM",
+                    "COMMUNITY",
+                  ]}
+                />
+              }
+            >
+              <Route path="profile" element={<Profile />} />
+              <Route path="settings" element={<Settings />} />
+            </Route>
+
+            {/* Admin dashboard - protected for Super Admin only */}
+            <Route element={<ProtectedRoute allowedRoles={["SUPER_ADMIN"]} />}>
+              <Route path="admin" element={<AdminDashboard />} />
+              <Route path="admin/users/:userId" element={<UserDetail />} />
+            </Route>
+
+            {/* Leader dashboard - protected for Super Admin and GDGC Lead */}
+            <Route
+              element={
+                <ProtectedRoute allowedRoles={["SUPER_ADMIN", "GDGC_LEAD"]} />
+              }
+            >
+              <Route path="leader" element={<LeaderDashboard />} />
+              <Route path="leader/users/:userId" element={<UserDetail />} />
+            </Route>
+
+            <Route path="*" element={<NotFound />} />
+          </Route>
+        </Routes>
+      </BrowserRouter>
+      <Toaster />
+    </AuthProvider>
   );
 }
 
