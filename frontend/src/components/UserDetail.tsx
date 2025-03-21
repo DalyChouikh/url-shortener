@@ -142,7 +142,7 @@ export default function UserDetail() {
 
       if (response.ok) {
         const data = await response.json();
-        setUrls(data.urls);
+        setUrls(data.urls || []);
         setPagination(data.pagination);
       } else {
         showToast("Failed to fetch user URLs", "error");
@@ -150,6 +150,7 @@ export default function UserDetail() {
     } catch (error) {
       console.error("Error fetching user URLs:", error);
       showToast("Error loading user URLs", "error");
+      setUrls([]);
     } finally {
       setUrlsLoading(false);
     }
@@ -267,7 +268,7 @@ export default function UserDetail() {
                 <div className="flex items-center justify-center py-8">
                   <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                 </div>
-              ) : urls.length === 0 ? (
+              ) : !urls || urls.length === 0 ? (
                 <div className="text-center py-8">
                   <div className="flex flex-col items-center gap-2">
                     <LinkIcon className="h-8 w-8 text-muted-foreground" />

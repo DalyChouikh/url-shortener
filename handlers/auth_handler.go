@@ -452,6 +452,11 @@ func (h *AuthHandler) HandleGetUserURLs(c *gin.Context) {
 		return
 	}
 
+	// Ensure urls is never null
+	if urls == nil {
+		urls = []map[string]interface{}{}
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"urls": urls,
 		"pagination": gin.H{

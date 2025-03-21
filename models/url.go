@@ -94,18 +94,23 @@ func (r *URLRepository) GetPaginatedUserURLs(userID uint, page, pageSize int) ([
 func (r *URLRepository) GetPaginatedUserURLsForAdmin(userID uint, page, pageSize int) ([]map[string]interface{}, int64, error) {
 	var urls []URL
 	var total int64
-	var results []map[string]interface{}
+	var results []map[string]interface{} = []map[string]interface{}{} // Initialize as empty array, not nil
 
 	offset := (page - 1) * pageSize
 
 	// Get total count
 	if err := r.db.Model(&URL{}).Where("user_id = ?", userID).Count(&total).Error; err != nil {
-		return nil, 0, err
+		return results, 0, err // Return empty array instead of nil
+	}
+
+	// If there are no URLs, return early with empty array
+	if total == 0 {
+		return results, 0, nil
 	}
 
 	// Get paginated URLs
 	if err := r.db.Where("user_id = ?", userID).Offset(offset).Limit(pageSize).Find(&urls).Error; err != nil {
-		return nil, 0, err
+		return results, 0, err // Return empty array instead of nil
 	}
 
 	// Format the result
