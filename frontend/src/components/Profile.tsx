@@ -116,7 +116,7 @@ export default function Profile() {
             <div>
               <h3 className="text-sm font-medium">Last Login</h3>
               <p className="text-sm text-muted-foreground mt-1">
-                {formatDate(user.lastLogin)}
+                {formatDate(user.lastLoginAt)}
               </p>
             </div>
           </div>

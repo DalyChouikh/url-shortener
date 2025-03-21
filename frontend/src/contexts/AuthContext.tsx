@@ -6,7 +6,7 @@ interface User {
   email: string;
   picture: string;
   createdAt: string;
-  lastLogin: string;
+  lastLoginAt: string;
   role: string;
 }
 

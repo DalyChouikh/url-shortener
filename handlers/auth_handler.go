@@ -111,7 +111,7 @@ func (h *AuthHandler) HandleGetProfile(c *gin.Context) {
 		"email":     user.Email,
 		"picture":   user.Picture,
 		"createdAt": user.CreatedAt,
-		"lastLogin": user.LastLoginAt,
+		"lastLoginAt": user.LastLoginAt,
 		"role":      user.Role,
 	})
 }
