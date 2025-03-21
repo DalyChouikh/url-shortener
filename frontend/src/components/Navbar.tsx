@@ -18,13 +18,24 @@ import {
   User,
   Menu,
   Home,
+  Users,
+  Shield,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function Navbar() {
-  const { user, logout } = useAuth();
+  const { user, logout, hasPermission } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Add role-based permission checks
+  const isCoreTeamOrAbove = hasPermission([
+    "SUPER_ADMIN",
+    "GDGC_LEAD",
+    "CORE_TEAM",
+  ]);
+  const isLead = hasPermission(["GDGC_LEAD"]);
+  const isAdmin = hasPermission(["SUPER_ADMIN"]);
 
   const handleLogout = async () => {
     await logout();
@@ -38,7 +49,15 @@ export default function Navbar() {
     navigate("/settings", { state: { from: location.pathname } });
   };
 
-  const NavLink = ({ to, children, className }: { to: string, children: React.ReactNode, className?: string }) => {
+  const NavLink = ({
+    to,
+    children,
+    className,
+  }: {
+    to: string;
+    children: React.ReactNode;
+    className?: string;
+  }) => {
     const isActive = location.pathname === to;
     return (
       <Button
@@ -68,18 +87,55 @@ export default function Navbar() {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-4">
-            <NavLink to="/">Home</NavLink>
-            <NavLink to="/about">About</NavLink>
+            <NavLink to="/">
+              <Home className="h-4 w-4" />
+              Home
+            </NavLink>
+            <NavLink to="/about">
+              <Info className="h-4 w-4" />
+              About
+            </NavLink>
+
+            {/* Role-based navigation items */}
+            {isCoreTeamOrAbove && (
+              <>
+                <NavLink to="/shorten">
+                  <LinkIcon className="h-4 w-4" />
+                  Shorten URL
+                </NavLink>
+                <NavLink to="/urls">
+                  <LinkIcon className="h-4 w-4" />
+                  My URLs
+                </NavLink>
+              </>
+            )}
+
+            {isLead && (
+              <NavLink to="/leader">
+                <Users className="h-4 w-4" />
+                Team Management
+              </NavLink>
+            )}
+
+            {isAdmin && (
+              <NavLink to="/admin">
+                <Shield className="h-4 w-4" />
+                Admin Dashboard
+              </NavLink>
+            )}
           </div>
         </div>
 
         <div className="flex items-center gap-4">
           {user ? (
             <>
-              <NavLink to="/shorten" className="gap-2">
-                <LinkIcon className="h-4 w-4" />
-                <span className="inline">Shorten URL</span>
-              </NavLink>
+              {/* Show shorten URL button in nav actions area for mobile */}
+              {isCoreTeamOrAbove && (
+                <NavLink to="/shorten" className="gap-2 md:hidden">
+                  <LinkIcon className="h-4 w-4" />
+                  <span className="inline">Shorten</span>
+                </NavLink>
+              )}
 
               {/* User Dropdown */}
               <DropdownMenu>
@@ -114,6 +170,44 @@ export default function Navbar() {
                       <Info className="mr-2 h-4 w-4" />
                       About
                     </DropdownMenuItem>
+
+                    {/* Role-based mobile menu items */}
+                    {isCoreTeamOrAbove && (
+                      <DropdownMenuItem
+                        onClick={() => navigate("/urls")}
+                        className={cn(
+                          location.pathname === "/urls" && "bg-primary/10"
+                        )}
+                      >
+                        <LinkIcon className="mr-2 h-4 w-4" />
+                        My URLs
+                      </DropdownMenuItem>
+                    )}
+
+                    {isLead && (
+                      <DropdownMenuItem
+                        onClick={() => navigate("/leader")}
+                        className={cn(
+                          location.pathname === "/leader" && "bg-primary/10"
+                        )}
+                      >
+                        <Users className="mr-2 h-4 w-4" />
+                        Team Management
+                      </DropdownMenuItem>
+                    )}
+
+                    {isAdmin && (
+                      <DropdownMenuItem
+                        onClick={() => navigate("/admin")}
+                        className={cn(
+                          location.pathname === "/admin" && "bg-primary/10"
+                        )}
+                      >
+                        <Shield className="mr-2 h-4 w-4" />
+                        Admin Dashboard
+                      </DropdownMenuItem>
+                    )}
+
                     <DropdownMenuSeparator />
                   </div>
 
