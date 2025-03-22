@@ -19,9 +19,17 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Copy, ArrowLeft, Loader2, LinkIcon, Check } from "lucide-react";
+import {
+  Copy,
+  ArrowLeft,
+  Loader2,
+  LinkIcon,
+  Check,
+  Search,
+} from "lucide-react";
 import { showToast } from "@/utils/toast";
 import { PaginationControls } from "@/components/ui/pagination-controls";
+import { Input } from "@/components/ui/input";
 
 interface User {
   id: number;
@@ -157,6 +165,7 @@ export default function UserDetail() {
     totalPages: 0,
   });
   const [copyingId, setCopyingId] = useState<number | null>(null);
+  const [urlSearchTerm, setUrlSearchTerm] = useState("");
   const isLeaderView = window.location.pathname.includes("/leader/");
 
   useEffect(() => {
@@ -261,6 +270,17 @@ export default function UserDetail() {
     }
   };
 
+  // Filter URLs based on search term
+  const filteredUrls = urls.filter((url) => {
+    if (!urlSearchTerm) return true;
+
+    const searchLower = urlSearchTerm.toLowerCase();
+    return (
+      url.LongURL.toLowerCase().includes(searchLower) ||
+      url.ShortCode.toLowerCase().includes(searchLower)
+    );
+  });
+
   if (loading) {
     return (
       <div className="container mx-auto p-6 flex items-center justify-center h-[70vh]">
@@ -348,6 +368,18 @@ export default function UserDetail() {
                 </div>
               ) : (
                 <>
+                  {/* Search Bar */}
+                  <div className="relative mb-6">
+                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      type="text"
+                      placeholder="Search by URL or short code..."
+                      className="pl-8"
+                      value={urlSearchTerm}
+                      onChange={(e) => setUrlSearchTerm(e.target.value)}
+                    />
+                  </div>
+
                   {/* Desktop Table View */}
                   <div className="hidden md:block">
                     <Table>
@@ -362,72 +394,89 @@ export default function UserDetail() {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {urls.map((url) => (
-                          <TableRow key={url.ID}>
-                            <TableCell className="font-medium">
-                              {formatDate(url.CreatedAt)}
-                            </TableCell>
-                            <TableCell className="max-w-[300px]">
-                              <div className="truncate">
-                                <a
-                                  href={url.LongURL}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-primary hover:underline"
-                                >
-                                  {url.LongURL}
-                                </a>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex items-center gap-2">
-                                <a
-                                  href={`/r/${url.ShortCode}`}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-primary hover:underline truncate"
-                                >
-                                  {`${window.location.origin}/r/${url.ShortCode}`}
-                                </a>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  onClick={() =>
-                                    copyToClipboard(
-                                      `${window.location.origin}/r/${url.ShortCode}`,
-                                      url.ID
-                                    )
-                                  }
-                                  className="shrink-0"
-                                  disabled={copyingId === url.ID}
-                                >
-                                  {copyingId === url.ID ? (
-                                    <Check className="h-4 w-4 text-green-500" />
-                                  ) : (
-                                    <Copy className="h-4 w-4" />
-                                  )}
-                                </Button>
-                              </div>
-                            </TableCell>
-                            <TableCell className="text-right font-medium">
-                              {url.Clicks}
+                        {filteredUrls.length === 0 ? (
+                          <TableRow>
+                            <TableCell
+                              colSpan={4}
+                              className="text-center h-24 text-muted-foreground"
+                            >
+                              No URLs found matching your search
                             </TableCell>
                           </TableRow>
-                        ))}
+                        ) : (
+                          filteredUrls.map((url) => (
+                            <TableRow key={url.ID}>
+                              <TableCell className="font-medium">
+                                {formatDate(url.CreatedAt)}
+                              </TableCell>
+                              <TableCell className="max-w-[300px]">
+                                <div className="truncate">
+                                  <a
+                                    href={url.LongURL}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-primary hover:underline"
+                                  >
+                                    {url.LongURL}
+                                  </a>
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex items-center gap-2">
+                                  <a
+                                    href={`/r/${url.ShortCode}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-primary hover:underline truncate"
+                                  >
+                                    {`${window.location.origin}/r/${url.ShortCode}`}
+                                  </a>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() =>
+                                      copyToClipboard(
+                                        `${window.location.origin}/r/${url.ShortCode}`,
+                                        url.ID
+                                      )
+                                    }
+                                    className="shrink-0"
+                                    disabled={copyingId === url.ID}
+                                  >
+                                    {copyingId === url.ID ? (
+                                      <Check className="h-4 w-4 text-green-500" />
+                                    ) : (
+                                      <Copy className="h-4 w-4" />
+                                    )}
+                                  </Button>
+                                </div>
+                              </TableCell>
+                              <TableCell className="text-right font-medium">
+                                {url.Clicks}
+                              </TableCell>
+                            </TableRow>
+                          ))
+                        )}
                       </TableBody>
                     </Table>
                   </div>
 
                   {/* Mobile Card View */}
                   <div className="md:hidden space-y-4">
-                    {urls.map((url) => (
-                      <URLCard
-                        key={url.ID}
-                        url={url}
-                        onCopy={copyToClipboard}
-                        copyingId={copyingId}
-                      />
-                    ))}
+                    {filteredUrls.length === 0 ? (
+                      <div className="text-center py-8 text-muted-foreground">
+                        No URLs found matching your search
+                      </div>
+                    ) : (
+                      filteredUrls.map((url) => (
+                        <URLCard
+                          key={url.ID}
+                          url={url}
+                          onCopy={copyToClipboard}
+                          copyingId={copyingId}
+                        />
+                      ))
+                    )}
                   </div>
 
                   <PaginationControls

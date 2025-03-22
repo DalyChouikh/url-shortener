@@ -22,6 +22,8 @@ import { showToast } from "@/utils/toast";
 import { Loader2 } from "lucide-react";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 import { useNavigate } from "react-router-dom";
+import { Input } from "@/components/ui/input";
+import { Search, Filter } from "lucide-react";
 
 interface User {
   id: number;
@@ -142,6 +144,8 @@ export default function AdminDashboard() {
     totalPages: 0,
   });
   const navigate = useNavigate();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [roleFilter, setRoleFilter] = useState<string>("ALL");
 
   const fetchUsers = async (page = 1, pageSize = 10) => {
     setLoading(true);
@@ -228,6 +232,25 @@ export default function AdminDashboard() {
     navigate(`/admin/users/${userId}`);
   };
 
+  // Filter users based on search term and role filter
+  const filteredUsers = users.filter((u) => {
+    // Role filter
+    if (roleFilter !== "ALL" && u.role !== roleFilter) {
+      return false;
+    }
+
+    // Search filter - check if name or email contains the search term
+    if (
+      searchTerm &&
+      !u.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
+      !u.email.toLowerCase().includes(searchTerm.toLowerCase())
+    ) {
+      return false;
+    }
+
+    return true;
+  });
+
   if (loading) {
     return (
       <div className="container mx-auto p-6 flex items-center justify-center h-[70vh]">
@@ -249,6 +272,35 @@ export default function AdminDashboard() {
             </div>
           ) : (
             <>
+              {/* Search and Filter Controls */}
+              <div className="flex flex-col md:flex-row gap-4 mb-6">
+                <div className="relative flex-1">
+                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    type="text"
+                    placeholder="Search by name or email..."
+                    className="pl-8"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                </div>
+                <div className="flex items-center gap-2">
+                  <Filter className="h-4 w-4 text-muted-foreground" />
+                  <Select value={roleFilter} onValueChange={setRoleFilter}>
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="Filter by role" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ALL">All Roles</SelectItem>
+                      <SelectItem value="SUPER_ADMIN">Super Admin</SelectItem>
+                      <SelectItem value="GDGC_LEAD">GDGC Lead</SelectItem>
+                      <SelectItem value="CORE_TEAM">Core Team</SelectItem>
+                      <SelectItem value="COMMUNITY">Community</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
               {/* Desktop Table View */}
               <div className="hidden md:block">
                 <Table>
@@ -262,80 +314,97 @@ export default function AdminDashboard() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {users.map((u) => (
-                      <TableRow
-                        key={u.id}
-                        className="cursor-pointer hover:bg-muted/50"
-                        onClick={() => handleUserClick(u.id)}
-                      >
-                        <TableCell className="flex items-center gap-2">
-                          <img
-                            src={u.picture}
-                            alt={u.name}
-                            className="w-8 h-8 rounded-full"
-                          />
-                          <span>{u.name}</span>
+                    {filteredUsers.length === 0 ? (
+                      <TableRow>
+                        <TableCell
+                          colSpan={5}
+                          className="text-center h-24 text-muted-foreground"
+                        >
+                          No users found matching your criteria
                         </TableCell>
-                        <TableCell>{u.email}</TableCell>
-                        <TableCell>
-                          <Badge className={getRoleBadgeColor(u.role)}>
-                            {formatRoleName(u.role)}
-                          </Badge>
-                        </TableCell>
-                        <TableCell onClick={(e) => e.stopPropagation()}>
-                          {user?.id !== u.id && (
-                            <Select
-                              value={u.role}
-                              onValueChange={(value) =>
-                                handleRoleChange(u.id, value)
-                              }
-                            >
-                              <SelectTrigger className="w-[180px]">
-                                <SelectValue placeholder="Select a role" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {/* Super admin can assign any role */}
-                                {user?.role === "SUPER_ADMIN" && (
-                                  <>
-                                    <SelectItem value="SUPER_ADMIN">
-                                      Super Admin
-                                    </SelectItem>
-                                    <SelectItem value="GDGC_LEAD">
-                                      GDGC Lead
-                                    </SelectItem>
-                                    <SelectItem value="CORE_TEAM">
-                                      Core Team
-                                    </SelectItem>
-                                    <SelectItem value="COMMUNITY">
-                                      Community
-                                    </SelectItem>
-                                  </>
-                                )}
-                              </SelectContent>
-                            </Select>
-                          )}
-                        </TableCell>
-                        <TableCell>{formatDate(u.lastLoginAt)}</TableCell>
                       </TableRow>
-                    ))}
+                    ) : (
+                      filteredUsers.map((u) => (
+                        <TableRow
+                          key={u.id}
+                          className="cursor-pointer hover:bg-muted/50"
+                          onClick={() => handleUserClick(u.id)}
+                        >
+                          <TableCell className="flex items-center gap-2">
+                            <img
+                              src={u.picture}
+                              alt={u.name}
+                              className="w-8 h-8 rounded-full"
+                            />
+                            <span>{u.name}</span>
+                          </TableCell>
+                          <TableCell>{u.email}</TableCell>
+                          <TableCell>
+                            <Badge className={getRoleBadgeColor(u.role)}>
+                              {formatRoleName(u.role)}
+                            </Badge>
+                          </TableCell>
+                          <TableCell onClick={(e) => e.stopPropagation()}>
+                            {user?.id !== u.id && (
+                              <Select
+                                value={u.role}
+                                onValueChange={(value) =>
+                                  handleRoleChange(u.id, value)
+                                }
+                              >
+                                <SelectTrigger className="w-[180px]">
+                                  <SelectValue placeholder="Select a role" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {/* Super admin can assign any role */}
+                                  {user?.role === "SUPER_ADMIN" && (
+                                    <>
+                                      <SelectItem value="SUPER_ADMIN">
+                                        Super Admin
+                                      </SelectItem>
+                                      <SelectItem value="GDGC_LEAD">
+                                        GDGC Lead
+                                      </SelectItem>
+                                      <SelectItem value="CORE_TEAM">
+                                        Core Team
+                                      </SelectItem>
+                                      <SelectItem value="COMMUNITY">
+                                        Community
+                                      </SelectItem>
+                                    </>
+                                  )}
+                                </SelectContent>
+                              </Select>
+                            )}
+                          </TableCell>
+                          <TableCell>{formatDate(u.lastLoginAt)}</TableCell>
+                        </TableRow>
+                      ))
+                    )}
                   </TableBody>
                 </Table>
               </div>
 
               {/* Mobile Card View */}
               <div className="md:hidden space-y-4">
-                {users.map((u) => (
-                  <UserCard
-                    key={u.id}
-                    user={u}
-                    currentUser={user}
-                    onRoleChange={handleRoleChange}
-                    onUserClick={handleUserClick}
-                    getRoleBadgeColor={getRoleBadgeColor}
-                    formatRoleName={formatRoleName}
-                    formatDate={formatDate}
-                  />
-                ))}
+                {filteredUsers.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    No users found matching your criteria
+                  </div>
+                ) : (
+                  filteredUsers.map((u) => (
+                    <UserCard
+                      key={u.id}
+                      user={u}
+                      currentUser={user}
+                      onRoleChange={handleRoleChange}
+                      onUserClick={handleUserClick}
+                      getRoleBadgeColor={getRoleBadgeColor}
+                      formatRoleName={formatRoleName}
+                      formatDate={formatDate}
+                    />
+                  ))
+                )}
               </div>
 
               <div className="mt-4">

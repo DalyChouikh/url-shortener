@@ -9,6 +9,7 @@ import {
   Loader2,
   Check,
   Plus,
+  Search,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -210,6 +211,7 @@ export default function URLList() {
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
   const [copyingId, setCopyingId] = useState<number | null>(null);
   const [downloadingId, setDownloadingId] = useState<number | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const fetchUrls = async (page = 1, pageSize = 10) => {
     setLoading(true);
@@ -373,6 +375,16 @@ export default function URLList() {
     }
   });
 
+  const filteredUrls = sortedUrls.filter((url) => {
+    if (!searchTerm) return true;
+
+    const searchLower = searchTerm.toLowerCase();
+    return (
+      url.LongURL.toLowerCase().includes(searchLower) ||
+      url.ShortCode.toLowerCase().includes(searchLower)
+    );
+  });
+
   return (
     <div className="container mx-auto p-6 space-y-8">
       <Card>
@@ -409,6 +421,18 @@ export default function URLList() {
             </div>
           ) : (
             <>
+              {/* Search Bar */}
+              <div className="relative mb-6">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  type="text"
+                  placeholder="Search by URL or short code..."
+                  className="pl-8"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+
               {/* Desktop Table View */}
               <div className="hidden md:block overflow-x-auto">
                 <Table>
@@ -443,138 +467,155 @@ export default function URLList() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {sortedUrls.map((url) => (
-                      <TableRow key={url.ID}>
-                        <TableCell className="w-[120px] text-muted-foreground">
-                          {new Date(url.CreatedAt).toLocaleDateString()}
+                    {filteredUrls.length === 0 ? (
+                      <TableRow>
+                        <TableCell
+                          colSpan={6}
+                          className="text-center h-24 text-muted-foreground"
+                        >
+                          No URLs found matching your search
                         </TableCell>
-                        <TableCell className="max-w-[300px]">
-                          <div className="truncate">
-                            <a
-                              href={url.LongURL}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-primary hover:underline"
-                            >
-                              {url.LongURL}
-                            </a>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <a
-                              href={`/r/${url.ShortCode}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-primary hover:underline truncate"
-                            >
-                              {`${window.location.origin}/r/${url.ShortCode}`}
-                            </a>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() =>
-                                copyToClipboard(
-                                  `${window.location.origin}/r/${url.ShortCode}`,
-                                  url.ID
-                                )
-                              }
-                              className="shrink-0"
-                              disabled={copyingId === url.ID}
-                            >
-                              {copyingId === url.ID ? (
-                                <Check className="h-4 w-4 text-green-500" />
-                              ) : (
-                                <Copy className="h-4 w-4" />
-                              )}
-                            </Button>
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-center font-medium">
-                          {url.Clicks}
-                        </TableCell>
-                        <TableCell>
-                          {url.QRCode && (
-                            <div className="flex flex-col items-center gap-2">
-                              <img
-                                src={`data:image/${
-                                  url.Format === "svg" ? "svg+xml" : "png"
-                                };base64,${url.QRCode}`}
-                                alt="QR Code"
-                                className="w-12 h-12 cursor-pointer hover:scale-105 transition-transform"
-                                onClick={() => {
-                                  setSelectedQR(url.QRCode);
-                                  setSelectedQRFormat(url.Format);
-                                }}
-                              />
+                      </TableRow>
+                    ) : (
+                      filteredUrls.map((url) => (
+                        <TableRow key={url.ID}>
+                          <TableCell className="w-[120px] text-muted-foreground">
+                            {new Date(url.CreatedAt).toLocaleDateString()}
+                          </TableCell>
+                          <TableCell className="max-w-[300px]">
+                            <div className="truncate">
+                              <a
+                                href={url.LongURL}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-primary hover:underline"
+                              >
+                                {url.LongURL}
+                              </a>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <a
+                                href={`/r/${url.ShortCode}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-primary hover:underline truncate"
+                              >
+                                {`${window.location.origin}/r/${url.ShortCode}`}
+                              </a>
                               <Button
                                 variant="ghost"
-                                size="sm"
+                                size="icon"
                                 onClick={() =>
-                                  downloadQRCode(
-                                    url.QRCode,
-                                    url.ShortCode,
-                                    url.Format,
+                                  copyToClipboard(
+                                    `${window.location.origin}/r/${url.ShortCode}`,
                                     url.ID
                                   )
                                 }
-                                className="h-8"
-                                disabled={downloadingId === url.ID}
+                                className="shrink-0"
+                                disabled={copyingId === url.ID}
                               >
-                                {downloadingId === url.ID ? (
+                                {copyingId === url.ID ? (
                                   <Check className="h-4 w-4 text-green-500" />
                                 ) : (
-                                  <Download className="h-4 w-4" />
+                                  <Copy className="h-4 w-4" />
                                 )}
                               </Button>
                             </div>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex justify-end gap-2">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleEdit(url)}
-                            >
-                              <Edit2 className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="text-destructive hover:text-destructive"
-                              onClick={() => setUrlToDelete(url.ID)}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                          </TableCell>
+                          <TableCell className="text-center font-medium">
+                            {url.Clicks}
+                          </TableCell>
+                          <TableCell>
+                            {url.QRCode && (
+                              <div className="flex flex-col items-center gap-2">
+                                <img
+                                  src={`data:image/${
+                                    url.Format === "svg" ? "svg+xml" : "png"
+                                  };base64,${url.QRCode}`}
+                                  alt="QR Code"
+                                  className="w-12 h-12 cursor-pointer hover:scale-105 transition-transform"
+                                  onClick={() => {
+                                    setSelectedQR(url.QRCode);
+                                    setSelectedQRFormat(url.Format);
+                                  }}
+                                />
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() =>
+                                    downloadQRCode(
+                                      url.QRCode,
+                                      url.ShortCode,
+                                      url.Format,
+                                      url.ID
+                                    )
+                                  }
+                                  className="h-8"
+                                  disabled={downloadingId === url.ID}
+                                >
+                                  {downloadingId === url.ID ? (
+                                    <Check className="h-4 w-4 text-green-500" />
+                                  ) : (
+                                    <Download className="h-4 w-4" />
+                                  )}
+                                </Button>
+                              </div>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex justify-end gap-2">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => handleEdit(url)}
+                              >
+                                <Edit2 className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="text-destructive hover:text-destructive"
+                                onClick={() => setUrlToDelete(url.ID)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
                   </TableBody>
                 </Table>
               </div>
 
               {/* Mobile Card View */}
               <div className="md:hidden space-y-4 px-2">
-                {sortedUrls.map((url) => (
-                  <URLCard
-                    key={url.ID}
-                    url={url}
-                    onCopy={(text, id) => copyToClipboard(text, id)}
-                    onEdit={handleEdit}
-                    onDelete={(id) => setUrlToDelete(id)}
-                    onQRClick={(qr, format) => {
-                      setSelectedQR(qr);
-                      setSelectedQRFormat(format);
-                    }}
-                    onQRDownload={(qr, code, format, id) =>
-                      downloadQRCode(qr, code, format, id)
-                    }
-                    copyingId={copyingId}
-                    downloadingId={downloadingId}
-                  />
-                ))}
+                {filteredUrls.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    No URLs found matching your search
+                  </div>
+                ) : (
+                  filteredUrls.map((url) => (
+                    <URLCard
+                      key={url.ID}
+                      url={url}
+                      onCopy={(text, id) => copyToClipboard(text, id)}
+                      onEdit={handleEdit}
+                      onDelete={(id) => setUrlToDelete(id)}
+                      onQRClick={(qr, format) => {
+                        setSelectedQR(qr);
+                        setSelectedQRFormat(format);
+                      }}
+                      onQRDownload={(qr, code, format, id) =>
+                        downloadQRCode(qr, code, format, id)
+                      }
+                      copyingId={copyingId}
+                      downloadingId={downloadingId}
+                    />
+                  ))
+                )}
               </div>
 
               <PaginationControls
