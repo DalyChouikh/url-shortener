@@ -34,6 +34,18 @@ func run() error {
 		log.Printf("Warning: Error loading .env file: %v", err)
 	}
 
+	// Ensure SMTP environment variables are set for contact form
+	requiredEnvVars := []string{
+		"SMTP_SERVER", "SMTP_PORT", "SMTP_USERNAME",
+		"SMTP_PASSWORD", "FROM_EMAIL", "CONTACT_EMAIL",
+	}
+
+	for _, envVar := range requiredEnvVars {
+		if os.Getenv(envVar) == "" {
+			log.Printf("Warning: %s environment variable is not set", envVar)
+		}
+	}
+
 	cfg := config.NewConfig(
 		env,
 		os.Getenv("DATABASE_CONNECTION_STRING"),

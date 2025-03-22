@@ -1,107 +1,81 @@
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogFooter,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Loader2 } from "lucide-react";
 import { showToast } from "@/utils/toast";
-import { CircleAlert, Loader2 } from "lucide-react";
-import { cn } from "@/lib/utils";
-
-const GETFORM_ENDPOINT = import.meta.env.VITE_GETFORM_ENDPOINT;
 
 interface ContactDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-type FormErrors = {
-  name?: string;
-  email?: string;
-  message?: string;
-};
-
 export default function ContactDialog({
   open,
   onOpenChange,
 }: ContactDialogProps) {
-  const [isLoading, setIsLoading] = useState(false);
-  const [errors, setErrors] = useState<FormErrors>({});
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    subject: "",
-    message: "",
-  });
-
-  const validateEmail = (email: string) => {
-    return String(email)
-      .toLowerCase()
-      .match(
-        /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
-      );
-  };
-
-  const validateForm = (): boolean => {
-    const newErrors: FormErrors = {};
-
-    if (!formData.name.trim()) {
-      newErrors.name = "Name is required";
-    }
-
-    if (!formData.email.trim()) {
-      newErrors.email = "Email is required";
-    } else if (!validateEmail(formData.email)) {
-      newErrors.email = "Please enter a valid email address";
-    }
-
-    if (!formData.message.trim()) {
-      newErrors.message = "Message is required";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [message, setMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
 
-    if (!validateForm()) {
-      setIsLoading(false);
+    // Simple validation
+    if (!name.trim() || !email.trim() || !message.trim()) {
+      showToast("Please fill out all fields", "error");
       return;
     }
 
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      showToast("Please enter a valid email address", "error");
+      return;
+    }
+
+    setIsSubmitting(true);
+
     try {
-      const response = await fetch(GETFORM_ENDPOINT, {
+      const response = await fetch("/api/v1/public/contact", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Accept: "application/json",
+          "X-Requested-With": "XMLHttpRequest",
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          name,
+          email,
+          message,
+        }),
       });
 
       if (response.ok) {
         showToast("Message sent successfully!", "success");
-        setFormData({ name: "", email: "", subject: "", message: "" });
-        setErrors({});
+        // Reset form
+        setName("");
+        setEmail("");
+        setMessage("");
         onOpenChange(false);
       } else {
-        throw new Error("Failed to send message");
+        const data = await response.json();
+        showToast(data.error || "Failed to send message", "error");
       }
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
-      showToast("Failed to send message. Please try again later.", "error");
+      console.error("Error submitting contact form:", error);
+      showToast("Something went wrong. Please try again later.", "error");
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -111,98 +85,56 @@ export default function ContactDialog({
         <DialogHeader>
           <DialogTitle>Contact Us</DialogTitle>
           <DialogDescription>
-            Send us a message and we'll get back to you as soon as possible.
+            Have a question or feedback? Send us a message and we'll get back to
+            you as soon as possible.
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="name">Name *</Label>
-            <Input
-              id="name"
-              name="name"
-              value={formData.name}
-              onChange={(e) => {
-                setFormData({ ...formData, name: e.target.value });
-                if (errors.name) {
-                  setErrors({ ...errors, name: undefined });
-                }
-              }}
-              placeholder="Your name"
-              className={cn(errors.name && "border-red-500")}
-            />
-            {errors.name && (
-              <span className="text-sm flex items-center text-red-500">
-                <CircleAlert className="mr-2 h-4 w-4 inline" />
-                {errors.name}
-              </span>
-            )}
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="email">Email *</Label>
-            <Input
-              id="email"
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={(e) => {
-                setFormData({ ...formData, email: e.target.value });
-                if (errors.email) {
-                  setErrors({ ...errors, email: undefined });
-                }
-              }}
-              placeholder="your.email@example.com"
-              className={cn(errors.email && "border-red-500")}
-            />
-            {errors.email && (
-              <span className="text-sm flex items-center text-red-500">
-                <CircleAlert className="mr-2 h-4 w-4 inline" />
-                {errors.email}
-              </span>
-            )}
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="subject">Subject</Label>
-            <Input
-              id="subject"
-              name="subject"
-              value={formData.subject}
-              onChange={(e) =>
-                setFormData({ ...formData, subject: e.target.value })
-              }
-              placeholder="What is this regarding?"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="message">Message *</Label>
-            <Textarea
-              id="message"
-              name="message"
-              value={formData.message}
-              onChange={(e) => {
-                setFormData({ ...formData, message: e.target.value });
-                if (errors.message) {
-                  setErrors({ ...errors, message: undefined });
-                }
-              }}
-              placeholder="Your message..."
-              className={cn(
-                "min-h-[100px]",
-                errors.message && "border-red-500",
-              )}
-            />
-            {errors.message && (
-              <span className="text-sm flex items-center text-red-500">
-                <CircleAlert className="mr-2 h-4 w-4 inline" />
-                {errors.message}
-              </span>
-            )}
+        <form onSubmit={handleSubmit}>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="name" className="text-right">
+                Name
+              </Label>
+              <Input
+                id="name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="col-span-3"
+                required
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="email" className="text-right">
+                Email
+              </Label>
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="col-span-3"
+                required
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="message" className="text-right">
+                Message
+              </Label>
+              <Textarea
+                id="message"
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                className="col-span-3"
+                rows={5}
+                required
+              />
+            </div>
           </div>
           <DialogFooter>
-            <Button type="submit" disabled={isLoading}>
-              {isLoading ? (
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Sending...
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Sending...
                 </>
               ) : (
                 "Send Message"

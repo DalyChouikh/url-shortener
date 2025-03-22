@@ -1,17 +1,20 @@
 package routes
 
 import (
+	"log"
 	"net/http"
 	"strings"
 	"sync"
 	"time"
 
 	"io/fs"
+	"os"
 
 	"github.com/DalyChouikh/url-shortener/config"
 	"github.com/DalyChouikh/url-shortener/frontend"
 	"github.com/DalyChouikh/url-shortener/handlers"
 	"github.com/DalyChouikh/url-shortener/middleware"
+	"github.com/DalyChouikh/url-shortener/utils"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
@@ -106,6 +109,39 @@ func SetupRoutes(urlHandler handlers.URLHandler, authHandler handlers.AuthHandle
 	spaHandler, err := handlers.NewSPAHandler(subFS)
 	if err != nil {
 		return nil, err
+	}
+
+	// Create email config from environment
+	emailConfig := utils.NewEmailConfigFromEnv()
+
+	// Validate and log email configuration
+	if emailConfig.SMTPServer == "" || emailConfig.SMTPPort == "" ||
+		emailConfig.SMTPUsername == "" || emailConfig.SMTPPassword == "" ||
+		emailConfig.FromEmail == "" {
+		log.Println("Warning: Email configuration is incomplete. Contact form will not work properly.")
+	} else {
+		log.Printf("Email configuration loaded successfully: Server: %s, Port: %s",
+			emailConfig.SMTPServer, emailConfig.SMTPPort)
+	}
+
+	// Get recipient email(s)
+	recipientEmail := os.Getenv("CONTACT_EMAIL")
+	if recipientEmail == "" {
+		log.Println("Warning: CONTACT_EMAIL not set. Contact form will not work properly.")
+		recipientEmail = emailConfig.FromEmail // Fallback to from email
+	}
+
+	// Add recipient emails
+	recipientEmails := []string{recipientEmail}
+
+	// Initialize contact handler
+	contactHandler := handlers.NewContactHandler(emailConfig, recipientEmails)
+
+	// Public API routes that don't require authentication
+	publicApi := router.Group("/api/v1/public")
+	publicApi.Use(middleware.AjaxRequired(), rateLimitMiddleware())
+	{
+		publicApi.POST("/contact", contactHandler.HandleContactSubmit)
 	}
 
 	// API routes
