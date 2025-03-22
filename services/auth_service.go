@@ -115,12 +115,12 @@ func (s *AuthService) UpdateUserRole(userID uint, role models.Role) error {
 	return s.userRepo.UpdateUserRole(userID, role)
 }
 
-func (s *AuthService) GetPaginatedUsers(page, pageSize int) ([]models.User, int64, error) {
-	return s.userRepo.GetPaginatedUsers(page, pageSize)
+func (s *AuthService) GetPaginatedUsers(page, pageSize int, search, roleFilter string) ([]models.User, int64, error) {
+	return s.userRepo.GetPaginatedUsers(page, pageSize, search, roleFilter)
 }
 
 // GetUserURLsForAdmin gets URLs created by a specific user (for admin/leader use)
-func (s *AuthService) GetUserURLsForAdmin(userID uint, page, pageSize int) ([]map[string]interface{}, int64, error) {
+func (s *AuthService) GetUserURLsForAdmin(userID uint, page, pageSize int, search string) ([]map[string]interface{}, int64, error) {
 	// Pass to URL repository to get the data
-	return s.urlRepo.GetPaginatedUserURLsForAdmin(userID, page, pageSize)
+	return s.urlRepo.GetPaginatedUserURLsForAdmin(userID, page, pageSize, search)
 }

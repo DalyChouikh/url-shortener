@@ -30,6 +30,7 @@ import {
 import { showToast } from "@/utils/toast";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 import { Input } from "@/components/ui/input";
+import { useDebounce } from "use-debounce";
 
 interface User {
   id: number;
@@ -167,6 +168,7 @@ export default function UserDetail() {
   const [copyingId, setCopyingId] = useState<number | null>(null);
   const [urlSearchTerm, setUrlSearchTerm] = useState("");
   const isLeaderView = window.location.pathname.includes("/leader/");
+  const [debouncedUrlSearchTerm] = useDebounce(urlSearchTerm, 500);
 
   useEffect(() => {
     fetchUserDetails();
@@ -202,23 +204,34 @@ export default function UserDetail() {
     }
   };
 
-  const fetchUserUrls = async (page = 1, pageSize = 10) => {
+  const fetchUserUrls = async (
+    page = 1,
+    pageSize = 10,
+    search = urlSearchTerm
+  ) => {
     setUrlsLoading(true);
     try {
       const endpoint = isLeaderView
         ? `/api/v1/leader/users/${userId}/urls`
         : `/api/v1/admin/users/${userId}/urls`;
 
-      const response = await fetch(
-        `${endpoint}?page=${page}&pageSize=${pageSize}`,
-        {
-          credentials: "include",
-          headers: {
-            Accept: "application/json",
-            "X-Requested-With": "XMLHttpRequest",
-          },
-        }
-      );
+      // Build query parameters including search
+      const queryParams = new URLSearchParams({
+        page: page.toString(),
+        pageSize: pageSize.toString(),
+      });
+
+      if (search) {
+        queryParams.append("search", search);
+      }
+
+      const response = await fetch(`${endpoint}?${queryParams.toString()}`, {
+        credentials: "include",
+        headers: {
+          Accept: "application/json",
+          "X-Requested-With": "XMLHttpRequest",
+        },
+      });
 
       if (response.ok) {
         const data = await response.json();
@@ -270,16 +283,10 @@ export default function UserDetail() {
     }
   };
 
-  // Filter URLs based on search term
-  const filteredUrls = urls.filter((url) => {
-    if (!urlSearchTerm) return true;
-
-    const searchLower = urlSearchTerm.toLowerCase();
-    return (
-      url.LongURL.toLowerCase().includes(searchLower) ||
-      url.ShortCode.toLowerCase().includes(searchLower)
-    );
-  });
+  // Re-fetch when search term changes
+  useEffect(() => {
+    fetchUserUrls(1, pagination.pageSize, debouncedUrlSearchTerm);
+  }, [debouncedUrlSearchTerm]);
 
   if (loading) {
     return (
@@ -394,7 +401,7 @@ export default function UserDetail() {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {filteredUrls.length === 0 ? (
+                        {urls.length === 0 ? (
                           <TableRow>
                             <TableCell
                               colSpan={4}
@@ -404,7 +411,7 @@ export default function UserDetail() {
                             </TableCell>
                           </TableRow>
                         ) : (
-                          filteredUrls.map((url) => (
+                          urls.map((url) => (
                             <TableRow key={url.ID}>
                               <TableCell className="font-medium">
                                 {formatDate(url.CreatedAt)}
@@ -463,12 +470,12 @@ export default function UserDetail() {
 
                   {/* Mobile Card View */}
                   <div className="md:hidden space-y-4">
-                    {filteredUrls.length === 0 ? (
+                    {urls.length === 0 ? (
                       <div className="text-center py-8 text-muted-foreground">
                         No URLs found matching your search
                       </div>
                     ) : (
-                      filteredUrls.map((url) => (
+                      urls.map((url) => (
                         <URLCard
                           key={url.ID}
                           url={url}

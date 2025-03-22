@@ -97,6 +97,8 @@ func (h *URLHandler) HandleGetUserURLs(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	pageSize, _ := strconv.Atoi(c.DefaultQuery("pageSize", "10"))
 
+	search := c.Query("search")
+
 	if page < 1 {
 		page = 1
 	}
@@ -104,7 +106,7 @@ func (h *URLHandler) HandleGetUserURLs(c *gin.Context) {
 		pageSize = 10
 	}
 
-	urls, total, err := h.urlService.GetPaginatedUserURLs(userID, page, pageSize)
+	urls, total, err := h.urlService.GetPaginatedUserURLs(userID, page, pageSize, search)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch URLs"})
 		return

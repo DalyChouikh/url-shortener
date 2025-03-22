@@ -108,20 +108,33 @@ func (r *UserRepository) UpdateUserRole(id uint, role Role) error {
 	return r.db.Model(&User{}).Where("id = ?", id).Update("role", role).Error
 }
 
-// GetPaginatedUsers retrieves users with pagination
-func (r *UserRepository) GetPaginatedUsers(page, pageSize int) ([]User, int64, error) {
+// GetPaginatedUsers retrieves users with pagination and filtering
+func (r *UserRepository) GetPaginatedUsers(page, pageSize int, search, roleFilter string) ([]User, int64, error) {
 	var users []User
 	var total int64
 
 	offset := (page - 1) * pageSize
 
-	// Get total count first
-	if err := r.db.Model(&User{}).Count(&total).Error; err != nil {
+	query := r.db.Model(&User{})
+
+	// Apply search filter if provided
+	if search != "" {
+		query = query.Where("LOWER(name) LIKE LOWER(?) OR LOWER(email) LIKE LOWER(?)",
+			"%"+search+"%", "%"+search+"%")
+	}
+
+	// Apply role filter if provided
+	if roleFilter != "" && roleFilter != "ALL" {
+		query = query.Where("role = ?", roleFilter)
+	}
+
+	// Get total count with filters applied
+	if err := query.Count(&total).Error; err != nil {
 		return nil, 0, err
 	}
 
-	// Get paginated users
-	if err := r.db.Offset(offset).Limit(pageSize).Find(&users).Error; err != nil {
+	// Get paginated users with filters applied
+	if err := query.Offset(offset).Limit(pageSize).Find(&users).Error; err != nil {
 		return nil, 0, err
 	}
 

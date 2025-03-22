@@ -71,35 +71,52 @@ func (r *URLRepository) FindExistingURL(userID uint, longURL string, format stri
 	return &url, err
 }
 
-func (r *URLRepository) GetPaginatedUserURLs(userID uint, page, pageSize int) ([]URL, int64, error) {
+// GetPaginatedUserURLs retrieves a user's URLs with pagination and search
+func (r *URLRepository) GetPaginatedUserURLs(userID uint, page, pageSize int, search string) ([]URL, int64, error) {
 	var urls []URL
 	var total int64
 
 	offset := (page - 1) * pageSize
 
-	// Get total count first
-	if err := r.db.Model(&URL{}).Where("user_id = ?", userID).Count(&total).Error; err != nil {
+	query := r.db.Model(&URL{}).Where("user_id = ?", userID)
+
+	// Apply search if provided
+	if search != "" {
+		query = query.Where("LOWER(long_url) LIKE LOWER(?) OR LOWER(short_code) LIKE LOWER(?)",
+			"%"+search+"%", "%"+search+"%")
+	}
+
+	// Get total count with search applied
+	if err := query.Count(&total).Error; err != nil {
 		return nil, 0, err
 	}
 
-	// Get paginated URLs
-	if err := r.db.Where("user_id = ?", userID).Offset(offset).Limit(pageSize).Find(&urls).Error; err != nil {
+	// Get paginated URLs with search applied
+	if err := query.Offset(offset).Limit(pageSize).Find(&urls).Error; err != nil {
 		return nil, 0, err
 	}
 
 	return urls, total, nil
 }
 
-// GetPaginatedUserURLsForAdmin fetches URLs for a specific user (for admin/leader use)
-func (r *URLRepository) GetPaginatedUserURLsForAdmin(userID uint, page, pageSize int) ([]map[string]interface{}, int64, error) {
+// GetPaginatedUserURLsForAdmin fetches URLs for a specific user with filtering (for admin/leader use)
+func (r *URLRepository) GetPaginatedUserURLsForAdmin(userID uint, page, pageSize int, search string) ([]map[string]interface{}, int64, error) {
 	var urls []URL
 	var total int64
 	var results []map[string]interface{} = []map[string]interface{}{} // Initialize as empty array, not nil
 
 	offset := (page - 1) * pageSize
 
-	// Get total count
-	if err := r.db.Model(&URL{}).Where("user_id = ?", userID).Count(&total).Error; err != nil {
+	query := r.db.Model(&URL{}).Where("user_id = ?", userID)
+
+	// Apply search if provided
+	if search != "" {
+		query = query.Where("LOWER(long_url) LIKE LOWER(?) OR LOWER(short_code) LIKE LOWER(?)",
+			"%"+search+"%", "%"+search+"%")
+	}
+
+	// Get total count with filters applied
+	if err := query.Count(&total).Error; err != nil {
 		return results, 0, err // Return empty array instead of nil
 	}
 
@@ -108,8 +125,8 @@ func (r *URLRepository) GetPaginatedUserURLsForAdmin(userID uint, page, pageSize
 		return results, 0, nil
 	}
 
-	// Get paginated URLs
-	if err := r.db.Where("user_id = ?", userID).Offset(offset).Limit(pageSize).Find(&urls).Error; err != nil {
+	// Get paginated URLs with filters applied
+	if err := query.Offset(offset).Limit(pageSize).Find(&urls).Error; err != nil {
 		return results, 0, err // Return empty array instead of nil
 	}
 

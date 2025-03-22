@@ -97,8 +97,8 @@ func (s *URLService) GetUserURLs(userID uint) ([]models.URL, error) {
 	return s.repo.GetUserURLs(userID)
 }
 
-func (s *URLService) GetPaginatedUserURLs(userID uint, page, pageSize int) ([]models.URL, int64, error) {
-	return s.repo.GetPaginatedUserURLs(userID, page, pageSize)
+func (s *URLService) GetPaginatedUserURLs(userID uint, page, pageSize int, search string) ([]models.URL, int64, error) {
+	return s.repo.GetPaginatedUserURLs(userID, page, pageSize, search)
 }
 
 func (s *URLService) UpdateURL(urlID int, userId uint, newURL string) error {

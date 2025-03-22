@@ -24,6 +24,7 @@ import { PaginationControls } from "@/components/ui/pagination-controls";
 import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Search, Filter } from "lucide-react";
+import { useDebounce } from "use-debounce";
 
 interface User {
   id: number;
@@ -146,12 +147,32 @@ export default function AdminDashboard() {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState<string>("ALL");
+  const [debouncedSearchTerm] = useDebounce(searchTerm, 500);
 
-  const fetchUsers = async (page = 1, pageSize = 10) => {
+  const fetchUsers = async (
+    page = 1,
+    pageSize = 10,
+    search = searchTerm,
+    role = roleFilter
+  ) => {
     setLoading(true);
     try {
+      // Build query parameters including search and role filter
+      const queryParams = new URLSearchParams({
+        page: page.toString(),
+        pageSize: pageSize.toString(),
+      });
+
+      if (search) {
+        queryParams.append("search", search);
+      }
+
+      if (role && role !== "ALL") {
+        queryParams.append("role", role);
+      }
+
       const response = await fetch(
-        `/api/v1/admin/users?page=${page}&pageSize=${pageSize}`,
+        `/api/v1/admin/users?${queryParams.toString()}`,
         {
           credentials: "include",
           headers: {
@@ -175,6 +196,10 @@ export default function AdminDashboard() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchUsers(1, pagination.pageSize, debouncedSearchTerm, roleFilter);
+  }, [debouncedSearchTerm, roleFilter]);
 
   useEffect(() => {
     fetchUsers();
@@ -286,7 +311,14 @@ export default function AdminDashboard() {
                 </div>
                 <div className="flex items-center gap-2">
                   <Filter className="h-4 w-4 text-muted-foreground" />
-                  <Select value={roleFilter} onValueChange={setRoleFilter}>
+                  <Select
+                    value={roleFilter}
+                    onValueChange={(value) => {
+                      setRoleFilter(value);
+                      // Reset to first page on filter change
+                      // fetchUsers(1, pagination.pageSize, searchTerm, value);
+                    }}
+                  >
                     <SelectTrigger className="w-[180px]">
                       <SelectValue placeholder="Filter by role" />
                     </SelectTrigger>

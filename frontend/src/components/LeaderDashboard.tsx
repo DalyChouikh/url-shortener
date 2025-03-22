@@ -29,6 +29,7 @@ import { Loader2, Search, Filter } from "lucide-react";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
+import { useDebounce } from "use-debounce";
 
 interface User {
   id: number;
@@ -151,12 +152,32 @@ export default function LeaderDashboard() {
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState<string>("ALL");
   const navigate = useNavigate();
+  const [debouncedSearchTerm] = useDebounce(searchTerm, 500);
 
-  const fetchUsers = async (page = 1, pageSize = 10) => {
+  const fetchUsers = async (
+    page = 1,
+    pageSize = 10,
+    search = searchTerm,
+    role = roleFilter
+  ) => {
     setLoading(true);
     try {
+      // Build query parameters including search and role filter
+      const queryParams = new URLSearchParams({
+        page: page.toString(),
+        pageSize: pageSize.toString(),
+      });
+
+      if (search) {
+        queryParams.append("search", search);
+      }
+
+      if (role && role !== "ALL") {
+        queryParams.append("role", role);
+      }
+
       const response = await fetch(
-        `/api/v1/leader/users?page=${page}&pageSize=${pageSize}`,
+        `/api/v1/leader/users?${queryParams.toString()}`,
         {
           credentials: "include",
           headers: {
@@ -181,6 +202,12 @@ export default function LeaderDashboard() {
     }
   };
 
+  // Re-fetch when search term or role filter changes
+  useEffect(() => {
+    fetchUsers(1, pagination.pageSize, debouncedSearchTerm, roleFilter);
+  }, [debouncedSearchTerm, roleFilter]);
+
+  // Initial fetch on component mount
   useEffect(() => {
     fetchUsers();
   }, []);
@@ -240,25 +267,6 @@ export default function LeaderDashboard() {
   const handleUserClick = (userId: number) => {
     navigate(`/leader/users/${userId}`);
   };
-
-  // Filter users based on search term and role filter
-  const filteredUsers = users.filter((u) => {
-    // Role filter
-    if (roleFilter !== "ALL" && u.role !== roleFilter) {
-      return false;
-    }
-
-    // Search filter - check if name or email contains the search term
-    if (
-      searchTerm &&
-      !u.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
-      !u.email.toLowerCase().includes(searchTerm.toLowerCase())
-    ) {
-      return false;
-    }
-
-    return true;
-  });
 
   if (loading) {
     return (
@@ -325,7 +333,7 @@ export default function LeaderDashboard() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredUsers.length === 0 ? (
+                    {users.length === 0 ? (
                       <TableRow>
                         <TableCell
                           colSpan={5}
@@ -335,7 +343,7 @@ export default function LeaderDashboard() {
                         </TableCell>
                       </TableRow>
                     ) : (
-                      filteredUsers.map((u) => (
+                      users.map((u) => (
                         <TableRow
                           key={u.id}
                           className="cursor-pointer hover:bg-muted/50"
@@ -396,12 +404,12 @@ export default function LeaderDashboard() {
 
               {/* Mobile Card View */}
               <div className="md:hidden space-y-4">
-                {filteredUsers.length === 0 ? (
+                {users.length === 0 ? (
                   <div className="text-center py-8 text-muted-foreground">
                     No users found matching your criteria
                   </div>
                 ) : (
-                  filteredUsers.map((u) => (
+                  users.map((u) => (
                     <UserCard
                       key={u.id}
                       user={u}

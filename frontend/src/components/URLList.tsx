@@ -48,6 +48,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { showToast } from "@/utils/toast";
 import { PaginationControls } from "@/components/ui/pagination-controls";
+import { useDebounce } from "use-debounce";
 
 interface URL {
   ID: number;
@@ -212,20 +213,28 @@ export default function URLList() {
   const [copyingId, setCopyingId] = useState<number | null>(null);
   const [downloadingId, setDownloadingId] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearchTerm] = useDebounce(searchTerm, 500);
 
-  const fetchUrls = async (page = 1, pageSize = 10) => {
+  const fetchUrls = async (page = 1, pageSize = 10, search = searchTerm) => {
     setLoading(true);
     try {
-      const response = await fetch(
-        `/api/v1/urls?page=${page}&pageSize=${pageSize}`,
-        {
-          credentials: "include",
-          headers: {
-            Accept: "application/json",
-            "X-Requested-With": "XMLHttpRequest",
-          },
-        }
-      );
+      // Build query parameters including search
+      const queryParams = new URLSearchParams({
+        page: page.toString(),
+        pageSize: pageSize.toString(),
+      });
+
+      if (search) {
+        queryParams.append("search", search);
+      }
+
+      const response = await fetch(`/api/v1/urls?${queryParams.toString()}`, {
+        credentials: "include",
+        headers: {
+          Accept: "application/json",
+          "X-Requested-With": "XMLHttpRequest",
+        },
+      });
 
       if (!response.ok) {
         throw new Error("Failed to fetch URLs");
@@ -242,6 +251,12 @@ export default function URLList() {
     }
   };
 
+  // Re-fetch when search term changes
+  useEffect(() => {
+    fetchUrls(1, pagination.pageSize, debouncedSearchTerm);
+  }, [debouncedSearchTerm]);
+
+  // Initial fetch on component mount
   useEffect(() => {
     fetchUrls();
   }, []);
@@ -363,6 +378,10 @@ export default function URLList() {
     fetchUrls(1, size);
   };
 
+  // Remove client-side filtering since it's now done server-side
+  // const filteredUrls = sortedUrls.filter((url) => {...});
+
+  // We still need sorting functionality since that's done client-side
   const sortedUrls = [...urls].sort((a, b) => {
     if (sortColumn === "CreatedAt") {
       return sortDirection === "asc"
@@ -373,16 +392,6 @@ export default function URLList() {
         ? a.Clicks - b.Clicks
         : b.Clicks - a.Clicks;
     }
-  });
-
-  const filteredUrls = sortedUrls.filter((url) => {
-    if (!searchTerm) return true;
-
-    const searchLower = searchTerm.toLowerCase();
-    return (
-      url.LongURL.toLowerCase().includes(searchLower) ||
-      url.ShortCode.toLowerCase().includes(searchLower)
-    );
   });
 
   return (
@@ -467,7 +476,7 @@ export default function URLList() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredUrls.length === 0 ? (
+                    {sortedUrls.length === 0 ? (
                       <TableRow>
                         <TableCell
                           colSpan={6}
@@ -477,7 +486,7 @@ export default function URLList() {
                         </TableCell>
                       </TableRow>
                     ) : (
-                      filteredUrls.map((url) => (
+                      sortedUrls.map((url) => (
                         <TableRow key={url.ID}>
                           <TableCell className="w-[120px] text-muted-foreground">
                             {new Date(url.CreatedAt).toLocaleDateString()}
@@ -592,12 +601,12 @@ export default function URLList() {
 
               {/* Mobile Card View */}
               <div className="md:hidden space-y-4 px-2">
-                {filteredUrls.length === 0 ? (
+                {sortedUrls.length === 0 ? (
                   <div className="text-center py-8 text-muted-foreground">
                     No URLs found matching your search
                   </div>
                 ) : (
-                  filteredUrls.map((url) => (
+                  sortedUrls.map((url) => (
                     <URLCard
                       key={url.ID}
                       url={url}

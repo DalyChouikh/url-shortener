@@ -106,13 +106,13 @@ func (h *AuthHandler) HandleGetProfile(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"id":        user.ID,
-		"name":      user.Name,
-		"email":     user.Email,
-		"picture":   user.Picture,
-		"createdAt": user.CreatedAt,
+		"id":          user.ID,
+		"name":        user.Name,
+		"email":       user.Email,
+		"picture":     user.Picture,
+		"createdAt":   user.CreatedAt,
 		"lastLoginAt": user.LastLoginAt,
-		"role":      user.Role,
+		"role":        user.Role,
 	})
 }
 
@@ -120,6 +120,8 @@ func (h *AuthHandler) HandleGetProfile(c *gin.Context) {
 func (h *AuthHandler) HandleGetAllUsers(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	pageSize, _ := strconv.Atoi(c.DefaultQuery("pageSize", "10"))
+	search := c.Query("search")
+	roleFilter := c.Query("role")
 
 	if page < 1 {
 		page = 1
@@ -128,7 +130,7 @@ func (h *AuthHandler) HandleGetAllUsers(c *gin.Context) {
 		pageSize = 10
 	}
 
-	users, total, err := h.AuthService.GetPaginatedUsers(page, pageSize)
+	users, total, err := h.AuthService.GetPaginatedUsers(page, pageSize, search, roleFilter)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 			"error": "failed to fetch users",
@@ -151,6 +153,8 @@ func (h *AuthHandler) HandleGetAllUsers(c *gin.Context) {
 func (h *AuthHandler) HandleGetLeaderUsers(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	pageSize, _ := strconv.Atoi(c.DefaultQuery("pageSize", "10"))
+	search := c.Query("search")
+	roleFilter := c.Query("role")
 
 	if page < 1 {
 		page = 1
@@ -159,7 +163,7 @@ func (h *AuthHandler) HandleGetLeaderUsers(c *gin.Context) {
 		pageSize = 10
 	}
 
-	users, total, err := h.AuthService.GetPaginatedUsers(page, pageSize)
+	users, total, err := h.AuthService.GetPaginatedUsers(page, pageSize, search, roleFilter)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 			"error": "failed to fetch users",
@@ -436,6 +440,7 @@ func (h *AuthHandler) HandleGetUserURLs(c *gin.Context) {
 
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	pageSize, _ := strconv.Atoi(c.DefaultQuery("pageSize", "10"))
+	search := c.Query("search")
 
 	if page < 1 {
 		page = 1
@@ -444,7 +449,7 @@ func (h *AuthHandler) HandleGetUserURLs(c *gin.Context) {
 		pageSize = 10
 	}
 
-	urls, total, err := h.AuthService.GetUserURLsForAdmin(uint(userID), page, pageSize)
+	urls, total, err := h.AuthService.GetUserURLsForAdmin(uint(userID), page, pageSize, search)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 			"error": "failed to fetch user URLs",
