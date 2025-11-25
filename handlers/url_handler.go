@@ -39,7 +39,7 @@ func (h *URLHandler) HandleShortenURL(c *gin.Context) {
 	}
 
 	cleanURL := strings.ToLower(strings.TrimPrefix(strings.TrimPrefix(req.LongURL, "https://"), "http://"))
-	if strings.Contains(cleanURL, "localhost:8080/r/") || strings.Contains(cleanURL, "gdgc-issatso.tech/r/") {
+	if strings.Contains(cleanURL, "localhost:8080/r/") || strings.Contains(cleanURL, "gdg-on-campus-issatso.tn/r/") {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "URL already shortened"})
 		return
 	}
@@ -162,7 +162,7 @@ func (h *URLHandler) HandleUpdateURL(c *gin.Context) {
 	}
 
 	cleanURL := strings.ToLower(strings.TrimPrefix(strings.TrimPrefix(req.LongURL, "https://"), "http://"))
-	if strings.Contains(cleanURL, "localhost:8080/r/") || strings.Contains(cleanURL, "gdgc-issatso.tech/r/") {
+	if strings.Contains(cleanURL, "localhost:8080/r/") || strings.Contains(cleanURL, "gdg-on-campus-issatso.tn/r/") {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "URL already shortened"})
 		return
 	}

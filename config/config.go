@@ -36,7 +36,7 @@ type SessionConfig struct {
 }
 
 func NewConfig(env, dbConnString string) *Config {
-	baseURL := "https://gdgc-issatso.tech"
+	baseURL := "https://gdg-on-campus-issatso.tn"
 	useHTTPS := true
 	if env == "development" {
 		baseURL = "http://localhost:8080"
